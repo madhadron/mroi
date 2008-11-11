@@ -24,6 +24,7 @@ import java.awt.event.AdjustmentEvent;
 
 public class MroiWindow extends StackWindow implements AdjustmentListener {
 	MroiCanvas can;
+	ImagePlus imp;
 	
 	public MroiWindow(ImagePlus imp) {
 		this(imp, new MroiCanvas(imp));
@@ -37,6 +38,12 @@ public class MroiWindow extends StackWindow implements AdjustmentListener {
 	@Override
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
 		super.adjustmentValueChanged(e);
-		can.con.goToFrameOn(slice, imp);
+		can.con.goToFrameOn(null, imp);
+	}
+	
+	@Override
+	public synchronized void mouseWheelMoved(java.awt.event.MouseWheelEvent e) {
+		super.mouseWheelMoved(e);
+		can.con.goToFrameOn(null, imp);
 	}
 }

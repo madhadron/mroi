@@ -23,8 +23,7 @@ import ij.plugin.filter.PlugInFilter;
 
 public class Mroi_ implements PlugInFilter {
 	public int setup(String arg, ImagePlus imp) {
-		MroiCanvas cc = new MroiCanvas(imp);
-    	new MroiWindow(imp, cc);
+    	new MroiWindow(imp);
     	return NO_CHANGES+STACK_REQUIRED+DOES_ALL;
 	}
 	

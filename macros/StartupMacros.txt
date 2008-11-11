@@ -30,4 +30,8 @@ macro "Redo Mroi Change [r]" {
       call("MroiCommand.run", "redo");
 }
 
+macro "Initial setup [q]" {
+	newImage("Untitled", "8-bit White", 400, 400, 5);
+	run("Mroi ");
+}
 

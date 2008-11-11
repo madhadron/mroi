@@ -54,17 +54,21 @@ public class MroiController {
 		keyCommands.add(new Copy<Geometry>());
 		keyCommands.add(new Paste());
 		keyCommands.add(new PadLine());
+		this.currentSlice = 1;
 	}
 
 	public void goToFrameOn(Integer slice, ImagePlus imp) {
+		System.out.println("Told to go to frame " + slice);
+		syncRoiFrom(imp);
 		if (slice == null) {
-			currentSlice = imp.getCurrentSlice();
+			this.currentSlice = imp.getCurrentSlice();
 			imp.updateAndRepaintWindow();
 		} else {
-			currentSlice = slice;
+			this.currentSlice = slice;
 			imp.setSlice(slice);
 			imp.updateAndRepaintWindow();
 		}
+		syncRoiTo(imp);
 	}
 
 	public void executeCommandOn(String lbl, ImagePlus imp)
@@ -110,8 +114,8 @@ public class MroiController {
 	}
 
 	public void paint(Graphics g, Rectangle visibleWindow, double magnification) {
-		for (Geometry geo : rois.current.get(currentSlice)
-				.asListWithoutCurrent()) {
+		System.out.println("Current slice = " + currentSlice);
+		for (Geometry geo : rois.current.get(currentSlice).asListWithoutCurrent()) {
 			drawGeometry(geo, g, visibleWindow, magnification);
 		}
 	}
