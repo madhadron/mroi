@@ -34,7 +34,7 @@ import com.vividsolutions.jts.geom.*;
 import java.util.*;
 import java.awt.event.*;
 
-public class MroiController {
+public class MroiController implements MroiAbstractController {
 	public Zipper<Map<Integer, MZipper<Geometry>>> rois;
 	public ArrayList<Command<Geometry>> keyCommands = new ArrayList<Command<Geometry>>();
 	public int currentSlice;
@@ -58,7 +58,6 @@ public class MroiController {
 	}
 
 	public void goToFrameOn(Integer slice, ImagePlus imp) {
-		System.out.println("Told to go to frame " + slice);
 		syncRoiFrom(imp);
 		if (slice == null) {
 			this.currentSlice = imp.getCurrentSlice();
@@ -114,7 +113,6 @@ public class MroiController {
 	}
 
 	public void paint(Graphics g, Rectangle visibleWindow, double magnification) {
-		System.out.println("Current slice = " + currentSlice);
 		for (Geometry geo : rois.current.get(currentSlice).asListWithoutCurrent()) {
 			drawGeometry(geo, g, visibleWindow, magnification);
 		}

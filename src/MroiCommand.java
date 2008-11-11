@@ -10,7 +10,7 @@ public class MroiCommand {
 	public static void run(String lbl) {
 		ImageCanvas can = WindowManager.getCurrentWindow().getCanvas();
 		if (can instanceof MroiCanvas) {
-			MroiController c = ((MroiCanvas)can).con;
+			MroiAbstractController c = ((MroiCanvas)can).con;
 			try {
 				c.executeCommandOn(lbl, ((MroiCanvas)can).imp);
 			} catch (NoSuchCommandException e) {

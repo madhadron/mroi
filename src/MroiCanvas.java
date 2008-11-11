@@ -35,7 +35,7 @@ import java.util.*;
 import java.awt.event.*;
 
 public class MroiCanvas extends ImageCanvas {
-	public MroiController con;
+	public MroiAbstractController con;
 	public ImagePlus imp;
 
 	public MroiCanvas(ImagePlus im) {
