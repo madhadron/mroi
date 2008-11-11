@@ -1,4 +1,3 @@
-import ij.plugin.PlugIn;
 import ij.WindowManager;
 import ij.gui.*;
 import mroi.*;
@@ -9,10 +8,11 @@ import mroi.*;
 public class MroiCommand {
 
 	public static void run(String lbl) {
-		ImageCanvas c = WindowManager.getCurrentWindow().getCanvas();
-		if (c instanceof MroiCanvas) {
+		ImageCanvas can = WindowManager.getCurrentWindow().getCanvas();
+		if (can instanceof MroiCanvas) {
+			MroiController c = ((MroiCanvas)can).con;
 			try {
-				((MroiCanvas)c).command(lbl);
+				c.executeCommandOn(lbl, ((MroiCanvas)can).imp);
 			} catch (NoSuchCommandException e) {
 				new MessageDialog(WindowManager.getCurrentWindow(), "No such command", "No such command: " + e.getMessage());
 			}

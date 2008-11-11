@@ -15,7 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -34,172 +34,47 @@ import com.vividsolutions.jts.geom.*;
 import java.util.*;
 import java.awt.event.*;
 
-
-
 public class MroiCanvas extends ImageCanvas {
-	public Zipper<Map<Integer,MZipper<Geometry>>> rois;
+	public MroiController con;
 	public ImagePlus imp;
-	public ArrayList<Command<Geometry>> keyCommands = new ArrayList<Command<Geometry>>();
-	
+
 	public MroiCanvas(ImagePlus im) {
 		super(im);
 		imp = im;
-		rois = new Zipper<Map<Integer,MZipper<Geometry>>>(null, new HashMap<Integer,MZipper<Geometry>>(), null);
-		for (int i = 1; i <= imp.getNSlices(); i++) {
-			rois.current.put(i, new NZipper<Geometry>(null,null));
-		}
-		keyCommands.add(new Undo<Geometry>());
-		keyCommands.add(new Redo<Geometry>());
-		keyCommands.add(new Save());
-		keyCommands.add(new Load());
-		keyCommands.add(new Delete<Geometry>());
-		keyCommands.add(new ExportSql());
-		keyCommands.add(new Copy<Geometry>());
-		keyCommands.add(new Paste());
-		keyCommands.add(new PadLine());
-		keyCommands.add(new SnakusculeCommand(imp));
-		keyCommands.add(new OutlineLabelledImage(imp));
-	}
-	
-	// Code to draw the ROIs on the screen.
-	public void drawGeometry(Geometry geom, Graphics g) {
-	    if (geom.isValid()) {
-		g.setColor(Color.green);
-	    } else {
-		g.setColor(Color.red);
-	    }
-	    drawUnselectedRoi(geomToRoi(geom), g);
-	}
-	
-	public void drawUnselectedRoi(Roi r, Graphics g) {
-		Rectangle rect = getSrcRect();
-		double mag = getMagnification();
-		int[] x = r.getPolygon().xpoints;
-		int[] y = r.getPolygon().ypoints;
-		for (int i = 1; i < r.getPolygon().npoints; i++) {
-			int px = (int)Math.round((x[i-1]-rect.x)*mag);
-			int py = (int)Math.round((y[i-1]-rect.y)*mag);
-			int qx = (int)Math.round((x[i]-rect.x)*mag);
-			int qy = (int)Math.round((y[i]-rect.y)*mag);
-			g.drawLine(px, py, qx, qy);
-		}
-		int n = r.getPolygon().npoints;
-		int px = (int)Math.round((x[n-1]-rect.x)*mag);
-		int py = (int)Math.round((y[n-1]-rect.y)*mag);
-		int qx = (int)Math.round((x[0]-rect.x)*mag);
-		int qy = (int)Math.round((y[0]-rect.y)*mag);
-		g.drawLine(px, py, qx, qy);
-	}
-	
-	public void paint(Graphics g) {
-		super.paint(g);
-		for (Geometry geo : rois.current.get(imp.getCurrentSlice()).asListWithoutCurrent()) {
-			drawGeometry(geo, g);
-		}
-	}
-	
-	public void setRoi(Geometry g) {
-		if (g == null) {
-			imp.setRoi((Roi)null);
-		} else 
-			imp.setRoi(geomToRoi(g));
-	}
-	
-	public Geometry getRoi() {
-		if (imp.getRoi() == null)
-			return null;
-		else
-			return roiToGeom(imp.getRoi());
-	}
-	
-	public void command(String lbl) throws NoSuchCommandException {
-		boolean invoked = false;
-		for (Command<Geometry> c : keyCommands) {
-			if (c.isInvoked(lbl)) {
-				invoked = true;
-				syncRoiFromScreen(imp.getCurrentSlice());
-				rois = c.exec(rois, imp.getCurrentSlice());
-				if (rois.current.get(imp.getCurrentSlice()) instanceof JZipper) {
-					setRoi(((JZipper<Geometry>)rois.current.get(imp.getCurrentSlice())).current);
-				} else {
-					setRoi(null);
-				}
-				imp.updateAndRepaintWindow();
-			}
-		}
-		if (!invoked) {
-			throw new NoSuchCommandException(lbl);
-		}
+		con = new MroiController(imp.getNSlices());
 	}
 
-	public void syncRoiFromScreen(int frame) {
-		if (imp.getRoi() != null) {
-		    if (rois.current.get(frame) == null) {
-			rois.current.put(frame, new NZipper<Geometry>(new ArrayList<Geometry>(), new ArrayList<Geometry>()));
-		    }
-		    if (rois.current.get(frame) instanceof JZipper) {
-			Update<Geometry> u = new Update<Geometry>(getRoi());
-			rois = u.exec(rois, frame);
-		    } else if (rois.current.get(frame) instanceof NZipper) {
-			Add<Geometry> a = new Add<Geometry>(getRoi());
-			rois = a.exec(rois, frame);
-		    }
-		}
+	public void paint(Graphics g) {
+		super.paint(g);
+		con.paint(g, getSrcRect(), getMagnification());
 	}
-	
-	public void syncRoiToScreen(int frame) {
-		if (rois.current.get(frame) instanceof NZipper)
-			imp.setRoi((Roi)null);
-		else if (rois.current.get(frame) instanceof JZipper)
-			setRoi(((JZipper<Geometry>)rois.current.get(frame)).current);
-		
-	}
-	
-	public void unselectRoi(int frame) {
-		syncRoiFromScreen(frame);
-		imp.setRoi((Roi)null);
-		imp.updateAndRepaintWindow();
-	}
-	
+
 	public void mousePressed(MouseEvent e) {
-		int frame = imp.getCurrentSlice();
 		Integer x = offScreenX(e.getX());
 		Integer y = offScreenY(e.getY());
 		Rectangle rect = getSrcRect();
-		if (x < rect.x || x > rect.x + rect.width || y < rect.y || y > rect.y+rect.width) {
-			// If the mouse is outside the actual image, just pass the click to the superclass.
+		if (x < rect.x || x > rect.x + rect.width || y < rect.y
+				|| y > rect.y + rect.width) {
+			// If the mouse is outside the actual image, 
+			// just pass the click to the superclass.
 			super.mousePressed(e);
-		} else {
-			// If the right mousebutton (BUTTON3) is pressed, go through selecting a new polygon.
-			// If the left is pressed, go through manipualting a polygon, and make sure it isn't
-			// dropped when the user clicks outside of it.
-			if (e.getButton() == MouseEvent.BUTTON3 || e.getButton() == MouseEvent.BUTTON2) {
-				syncRoiFromScreen(frame);
-
-				Point p = gfact.createPoint(new Coordinate(x,y));
-				ContainmentPredicate cpr = new ContainmentPredicate(p);
-				Select<Geometry> sel = new Select<Geometry>(cpr);
-
-				sel.exec(rois, frame);
-				syncRoiToScreen(frame);
-				
-/*				if (getRoi() != null && imp.getRoi().getState() != Roi.CONSTRUCTING) {
-					if (rois.current.get(frame) instanceof JZipper) {
-						
-						((JZipper<Geometry>)rois.current.get(frame)).current = getRoi();
-					} else {
-						rois.current.get(frame).add(getRoi());
-					}
-				}
-				MZipper<Geometry> rs = rois.current.get(frame);
-				rois.current.put(imp.getCurrentSlice(), 
-						rs.select(new ContainmentPredicate(gfact.createPoint(new Coordinate(x,y)))));*/
-			} else {
-				Roi current = imp.getRoi();
-				super.mousePressed(e);
-				if (current != null) imp.setRoi(current);
+		} else if (e.getButton() == MouseEvent.BUTTON1) {
+			// This is necessary to make ImageJ not drop
+			// the current ROI when we click outside of it
+			// with the left button.
+			Roi current = imp.getRoi();
+			super.mousePressed(e);
+			if (current != null) {
+				imp.setRoi(current);
 			}
 			imp.updateAndRepaintWindow();
+		} else {
+			// If the right mousebutton (BUTTON3) is pressed, 
+			// go through selecting a new polygon.
+			// If the left is pressed, go through manipualting a 
+			// polygon, and make sure it isn't
+			// dropped when the user clicks outside of it.
+			con.mousePressedOnAt(imp, x, y, e.getButton(), e.getModifiers());
 		}
 	}
 }

@@ -16,27 +16,27 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-import ij.ImagePlus;
-import java.awt.event.AdjustmentListener;
-import ij.gui.StackWindow;
+package mroi.commands.test;
 
-import java.awt.event.AdjustmentEvent;
+import static org.junit.Assert.*;
 
-public class MroiWindow extends StackWindow implements AdjustmentListener {
-	MroiCanvas can;
-	
-	public MroiWindow(ImagePlus imp) {
-		this(imp, new MroiCanvas(imp));
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
+
+import mroi.*;
+import mroi.commands.*;
+import mroi.test.IntCon;
+import java.util.*;
+
+public class SingleRoiMutatingCommandTest {
+    class AddOneToCurrent extends SingleRoiMutatingCommand<IntCon> {
+	@Override public IntCon singleRoiOperation(IntCon z) {
+	    return new IntCon(z.i + 1);
 	}
-	public MroiWindow(ImagePlus imp, MroiCanvas ic) {
-		super(imp,ic);
-		this.imp=imp;
-		can = ic;
-	}
-	
-	@Override
-	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
-		super.adjustmentValueChanged(e);
-		can.con.goToFrameOn(slice, imp);
-	}
-}
+
+	@Override boolean isInvoked(String e) { return true; }
+    }
+
+    
