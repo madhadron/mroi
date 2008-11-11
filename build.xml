@@ -1,0 +1,61 @@
+<project default="build">
+
+<property name="version" value="1.0.1"/>
+
+<target name="build" depends="compile,test">
+  <echo>Building with tests</echo>
+</target>
+
+<target name="compile">
+  <mkdir dir="plugins" />
+  <javac srcdir="src" destdir="plugins">
+    <classpath>
+      <pathelement location="plugins/" />
+      <pathelement location="lib/ij.jar"/>
+      <pathelement location="lib/jts-1.8.jar"/>
+      <pathelement location="lib/jtsio-1.8.jar"/>
+      <pathelement location="lib/junit-4.4.jar"/>
+    </classpath>
+  </javac>
+</target>
+
+<target name="test" depends="compile">
+  <junit haltonfailure="yes" printsummary="yes">
+    <formatter type="plain"/>
+    <classpath>
+      <pathelement location="plugins/" />
+      <pathelement location="lib/ij.jar"/>
+      <pathelement location="lib/jts-1.8.jar"/>
+      <pathelement location="lib/jtsio-1.8.jar"/>
+      <pathelement location="lib/junit-4.4.jar"/>
+    </classpath>
+
+    <batchtest>
+      <fileset dir="plugins" includes="**/*Test.class" />
+    </batchtest>
+  </junit>
+</target>
+
+<target name="package" depends="compile,test">
+  <tar destfile="mroi-${version}.tar.gz" compression="gzip"
+       basedir="." includes="src/**,lib/**,plugins/**,README,DESIGN,LICENSE,build.xml"/>
+</target>
+
+<target name="run" depends="compile">
+  <java classname="ij.ImageJ" fork="true">
+    <classpath>
+      <pathelement location="plugins/" />
+      <pathelement location="lib/ij.jar"/>
+      <pathelement location="lib/jts-1.8.jar"/>
+      <pathelement location="lib/jtsio-1.8.jar"/>
+      <pathelement location="lib/junit-4.4.jar"/>
+    </classpath>
+    <arg value="-Dplugins.dir" />
+  </java>
+</target>
+
+<target name="clean">
+  <delete dir="plugins" />
+</target>
+
+</project>

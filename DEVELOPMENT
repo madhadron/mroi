@@ -1,0 +1,37 @@
+DEVELOPMENT ENVIRONMENT
+	    You need a functional Java development environment: JDK 6, which includes Ant and JUnit 4.  Most Linux distributions have this packaged.  Java 6 finally appeared on Apple Developer Connection for MacOS X.  Windows users should download it from 
+
+	    	http://java.sun.com/javase/downloads/index.jsp
+
+I use Eclipse for Java, Emacs for everything else.  Get Eclipse -- just the basic Java development environment, nothing else -- from
+
+      	      	http://www.eclipse.org
+
+To install ImageJ and develop plugins for it in Eclipse, follow the instructions at
+
+   	   	http://imagejdocu.tudor.lu/imagej-documentation-wiki/Members/ppirrotte/howtos/the-imagej-eclipse-howto/
+
+but when you set up the mroi project, be sure to tell Eclipse to use mroi's existing build.xml file instead of its own build mechanism.
+    	    Ant (http://ant.apache.org) and JUnit (http://www.junit.org) are central to developing mroi.  Both are included in the JDK, but you must learn to use them.
+      	    I use git for version control.  Download it from http://git.or.cz and read the documentation there.  contrib/completion in the git distribution contains git-completion.bash which integrates git with bash.  Put it somewhere and add
+
+source /path/to/git-completion.bash
+export PS1='[${debian_chroot:+($debian_chroot)}\u@\h \W$(__git_ps1 " (%s)")]\$ '
+
+to your .bashrc.  The second line extends your command prompt to show the current branch whenever you are in a git repository.
+
+GETTING THE CODE
+	    If you want to contribute your changes back, and under the license you must if you want to redistribute the software at all, you need a Gitorious account.  Go to 
+	  
+	  http://gitorious.org
+
+and request an account.  They'll send you an email confirming your account creation.  Upload your SSH public key, go to the mroi project, and hit the 'Clone repository' link.  Name the new repository after yourself.  This is where all your code will go.
+    	    After you have created the new repository (which will take a few minutes), you must clone it locally.  Create a directory where you will work, and in that directory issue the command
+
+$ git clone git://gitorious.org/mroi/name-of-your-clone.git
+
+This creates a new directory 'name-of-your-clone' and downloads the code to it.  Do your work in this directory.  When you are ready to push code back to the public repository, run
+
+$ git push git@gitorious.org:mroi/name-of-your-clone.git
+
+All these command are listed under 'More info...' at the top of the Gitorious listing for your repository.  When you have pushed changes, you can notify Fred Ross (madhadron) to merge with the 'Request merge' link.

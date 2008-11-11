@@ -1,0 +1,33 @@
+macro "Delete Mroi [d]" {
+      call("MroiCommand.run", "delete");
+}
+
+macro "Load Mrois [o]" {
+      call("MroiCommand.run", "load");
+}
+
+macro "Save Mrois [s]" {
+      call("MroiCommand.run", "save");
+}
+
+macro "Export Mrois as SQL [x]" {
+      call("MroiCommand.run", "exportsql");
+}
+
+macro "Copy Mroi [c]" {
+      call("MroiCommand.run", "copy");
+}
+
+macro "Paste Mroi [v]" {
+      call("MroiCommand.run", "paste");
+}
+
+macro "Undo Mroi Change [z]" {
+      call("MroiCommand.run", "undo");
+}
+
+macro "Redo Mroi Change [r]" {
+      call("MroiCommand.run", "redo");
+}
+
+

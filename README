@@ -1,0 +1,52 @@
+MROI - MULTIPLE ROIS FOR IMAGEJ
+Fred Ross <madhadron@gmail.com>
+
+mroi extends ImageJ's region of interest system to multiple regions maintained independently across multiple frames of an image stack.  It maintains undo/redo information for all region operations, lets you save and load region collections, and provides hooks for region-modifying tools.
+
+The latest functional version is always the master branch of Fred Ross (madhadron)'s mainline repository at [Gitorious][gitorious-repo].  Snapshots are occasionally posted to the [McKinney-Lab website][labac].  but the software running that site is strange and difficult, so these versions are likely to be out of date.
+
+[gitorious-repo]: http://gitorious.org/projects/mroi
+[labac]: http://mckinney-lab.epfl.ch/page27353.html
+
+
+
+
+Installation
+---------
+If you have Ant installed (it comes with recent JDKs), you can run mroi in place by typing
+
+`$ ant run`
+
+in the top directory of the distribution.  To install mroi to your own ImageJ installation, put the jars in the `lib/` directory somewhere ImageJ can find them such as your JDK's extensions directory (`/System/Library/Java/Extensions` on MacOS X), and move everything in the `plugins/` directory to your ImageJ plugins directory.  See `DEVELOPMENT` for advice on setting up an environment to extend mroi.
+
+Included Software
+--------------
+mroi includes all the libraries necessary to run it in the lib/ subdirectory.
+
+* ij.jar ([ImageJ][ij], public domain)
+* jts-1.8.jar and jtsio-1.8.jar ([Java Topology Suite][jts], LGPL)
+* junit-4.4.jar ([JUnit][junit], CPL)
+
+[ij]: http://rsb.info.nih.gov/ij/
+[jts]: http://www.vividsolutions.com/jts/jtshome.htm
+[junit]: http://www.junit.org
+
+Usage
+-----
+Load an image stack in ImageJ.  Run the mroi plugin.  The left mouse button's behavior doesn't change.  It draws and moves ROIs, but clicking outside the ROI no longer makes it disappear.
+
+The middle and right mouse buttons select ROIs.  Click either in an ROI, and it becomes selected (turns yellow), and all other ROIs are unselected (turn red).  Click in space not occupied by an ROI to have no ROI selected.  Only one ROI can be selected at a time.
+
+z and r undo and redo mutating actions on ROIs, respectively.  Mutating actions change the ROIs.  Selecting an ROI is nonmutating.  Changing frames is nonmutating.  Adding an ROI is mutating.
+
+d deletes any currently selected ROI.  o loads files containing ROIs.  s saves the current ROI set to a file.  x exports the current ROI set to an SQL file suitable for loading into lineagedb ([lineagedb]).
+
+[lineagedb]: http://gitorious.org/projects/lineagedb/
+
+Known Bugs
+---------
+* If you change slices after drawing a new ROI but before deselecting it, it is lost. 
+
+Todo
+----
+* Add an abstract MutateSingleRoiCommand class to act as a superclass for commands which modify only the current ROI.
