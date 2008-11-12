@@ -35,18 +35,20 @@ import java.util.*;
 import java.awt.event.*;
 
 public class MroiCanvas extends ImageCanvas {
-	public MroiAbstractController con;
+	public AbstractState state;
+	public MouseController mc;
 	public ImagePlus imp;
 
 	public MroiCanvas(ImagePlus im) {
 		super(im);
 		imp = im;
-		con = new MroiController(imp.getNSlices());
+		state = new State(imp.getNSlices());
+		mc = new MouseController(state);
 	}
 
 	public void paint(Graphics g) {
 		super.paint(g);
-		con.paint(g, getSrcRect(), getMagnification());
+		state.paint(g, getSrcRect(), getMagnification());
 	}
 
 	public void mousePressed(MouseEvent e) {
@@ -74,7 +76,7 @@ public class MroiCanvas extends ImageCanvas {
 			// If the left is pressed, go through manipualting a 
 			// polygon, and make sure it isn't
 			// dropped when the user clicks outside of it.
-			con.mousePressedOnAt(imp, x, y, e.getButton(), e.getModifiers());
+			mc.mousePressedOnAt(imp, x, y, e.getButton(), e.getModifiers());
 		}
 	}
 }

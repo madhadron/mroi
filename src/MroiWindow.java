@@ -38,12 +38,12 @@ public class MroiWindow extends StackWindow implements AdjustmentListener {
 	@Override
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
 		super.adjustmentValueChanged(e);
-		can.con.goToFrameOn(null, imp);
+		can.state.goToFrameOn(null, imp);
 	}
 	
 	@Override
 	public synchronized void mouseWheelMoved(java.awt.event.MouseWheelEvent e) {
 		super.mouseWheelMoved(e);
-		can.con.goToFrameOn(null, imp);
+		can.state.goToFrameOn(null, imp);
 	}
 }
