@@ -15,7 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package mroi.commands;
 
 import java.awt.AWTEvent;
@@ -31,54 +31,69 @@ import mroi.Zipper;
 import mroi.io.MroiListWriter;
 import ij.IJ;
 import java.util.*;
+import mroi.RoiContainer;
 
 import javax.swing.JFileChooser;
 
-public class ExportSql implements Command<Geometry> {
+public class ExportSql implements Command<RoiContainer> {
 
-    public Zipper<Map<Integer,MZipper<Geometry>>> exec(final Zipper<Map<Integer,MZipper<Geometry>>> z, int frame) {
-	JFileChooser fc = new JFileChooser();
-	int returnval = fc.showSaveDialog(WindowManager.getCurrentWindow().getCanvas());
-	GenericDialog gd = new GenericDialog("Point number");
-	gd.addNumericField("Point: ", 0, 0);
-	gd.showDialog();
-	if (gd.wasCanceled()) return z;
-	int point = (int) gd.getNextNumber();
-	if (returnval == JFileChooser.APPROVE_OPTION) {
-	    try {
-		File f = new File(fc.getSelectedFile().getCanonicalPath());
-		BufferedWriter out = new BufferedWriter(new FileWriter(f));
-		Map<Integer,MZipper<Geometry>> rs = z.current;
-		out.append("INSERT INTO points(pointid) VALUES (" + point + ");\n");
-		for (Integer e : rs.keySet()) {
-		    MZipper<Geometry> zp = rs.get(e);
-		    if (zp.size() > 0) {
-			out.append("INSERT INTO frames (frameid,framepoint) VALUES (" + e + "," + point + ");\n");
-			for (Geometry g : zp.asList()) {
-			    if (g.isValid()) {
-				out.append("INSERT INTO polygons (polyshape,polyframe,polypoint) VALUES (" + 
-					 "GeomFromText('" + g.toText()+ "'), " + e + ", " + point + ");\n");
-			    }
+	public Zipper<Map<Integer, MZipper<RoiContainer>>> exec(
+			final Zipper<Map<Integer, MZipper<RoiContainer>>> z, int frame) {
+		JFileChooser fc = new JFileChooser();
+		int returnval = fc.showSaveDialog(WindowManager.getCurrentWindow()
+				.getCanvas());
+		GenericDialog gd = new GenericDialog("Point number");
+		gd.addNumericField("Point: ", 0, 0);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return z;
+		int point = (int) gd.getNextNumber();
+		if (returnval == JFileChooser.APPROVE_OPTION) {
+			try {
+				File f = new File(fc.getSelectedFile().getCanonicalPath());
+				BufferedWriter out = new BufferedWriter(new FileWriter(f));
+				Map<Integer, MZipper<RoiContainer>> rs = z.current;
+				out.append("INSERT INTO points(pointid) VALUES (" + point
+						+ ");\n");
+				for (Integer e : rs.keySet()) {
+					MZipper<RoiContainer> zp = rs.get(e);
+					if (zp.size() > 0) {
+						out
+								.append("INSERT INTO frames (frameid,framepoint) VALUES ("
+										+ e + "," + point + ");\n");
+						for (RoiContainer g : zp.asList()) {
+							if (g.getGeometry().isValid()) {
+								out
+										.append("INSERT INTO polygons (polyshape,polyframe,polypoint) VALUES ("
+												+ "GeomFromText('"
+												+ g.getGeometry().toText()
+												+ "'), "
+												+ e
+												+ ", "
+												+ point
+												+ ");\n");
+							}
+						}
+					}
+				}
+				out.append("SELECT updatematviews();");
+				out.flush();
+			} catch (IOException e) {
+				IJ.error("Couldn't write SQL to "
+						+ fc.getSelectedFile().getName() + ": "
+						+ e.getMessage());
 			}
-		    }
-		}
-		out.append("SELECT updatematviews();");
-		out.flush();
-	    } catch (IOException e) {
-	    	IJ.error("Couldn't write SQL to " + fc.getSelectedFile().getName() + ": " + e.getMessage());
-	    }
 
+		}
+		return z;
 	}
-    return z;
-    }
-	
 
 	public boolean isInvoked(String lbl) {
 		return lbl.equalsIgnoreCase("exportsql");
 	}
-	
+
 	public MZipper operation(MZipper mz) {
-	    // Not used.
-	    return null;
+		// Not used.
+		return null;
 	}
 }

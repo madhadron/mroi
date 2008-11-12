@@ -45,12 +45,12 @@ public class Copy<T> extends NonmutatingCommand<T> {
 		
 		if(mz instanceof JZipper)
 		{
-			a.copyInstance(((JZipper<Geometry>)mz).current);
+			a.copyInstance(((JZipper<RoiContainer>)mz).current);
 		}
 		else
 		{
-			a.copyInstance(((NZipper<Geometry>)mz).lefts);
-			a.copyInstance(((NZipper<Geometry>)mz).rights);
+			a.copyInstance(((NZipper<RoiContainer>)mz).lefts);
+			a.copyInstance(((NZipper<RoiContainer>)mz).rights);
 		}
 		return mz;
 	}

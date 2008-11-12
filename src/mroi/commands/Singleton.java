@@ -1,13 +1,14 @@
 package mroi.commands;
 
 import java.util.* ;
+import mroi.RoiContainer;
 import com.vividsolutions.jts.geom.*;
 
 public class Singleton{
 	
 	public static boolean state = false;
 	public static Singleton instance;
-	public ArrayList<Geometry> clipboard = new ArrayList<Geometry>();
+	public ArrayList<RoiContainer> clipboard = new ArrayList<RoiContainer>();
 	
 	private Singleton(){
 		state = true; 
@@ -23,18 +24,18 @@ public class Singleton{
 	}
 	
 
-	public Geometry copyInstance(Geometry x)
+	public RoiContainer copyInstance(RoiContainer x)
 	{	
 		clipboard.add(x);
 		return clipboard.get(0);
 	}
-	public void copyInstance(List<Geometry> x)
+	public void copyInstance(List<RoiContainer> x)
 	{
 		clipboard.addAll(x);
 	}
 	
 	
-	public List<Geometry> pasteInstance()
+	public List<RoiContainer> pasteInstance()
 	{
 		return clipboard;
 	}

@@ -34,7 +34,7 @@ public class MroiListReader {
 //	Pattern jzipper = Pattern.compile("JZipper(\\s*\\[(.+?)\\]\\s*,\\s*(.+?),\\s*[(.+?)\\]\\s*)");
 //	Pattern nzipper = Pattern.compile("JZipper(\\s*\\[(.+?)\\]\\s*,\\s*[(.+?)\\]\\s*)");
 //	Pattern list = Pattern.compile("^\\s*(?:([A-Z]+\\([\\(\\)\\s0-9]\\)\\s*)s*");
-	public Map<Integer,MZipper<Geometry>> read(BufferedReader in) throws IOException, MalformedGeometryFileException {
+	public Map<Integer,MZipper<RoiContainer>> read(BufferedReader in) throws IOException, MalformedGeometryFileException {
 		StringBuffer b = new StringBuffer();
 		String t = in.readLine();
 		while (t != null) {
@@ -44,13 +44,13 @@ public class MroiListReader {
 		String normalized = b.toString().replaceAll("\\s*([\\(\\)\\[\\]\\{\\}\\,=])\\s*", "$1"); // Remove whitespace around punctuation
 		
 		
-		Map<Integer,MZipper<Geometry>> result = parseMap(normalized);
+		Map<Integer,MZipper<RoiContainer>> result = parseMap(normalized);
 
 		return result;
 	}
 
-	public Map<Integer,MZipper<Geometry>> parseMap(String input) throws MalformedGeometryFileException {
-		Map<Integer,MZipper<Geometry>> result = new HashMap<Integer,MZipper<Geometry>>();
+	public Map<Integer,MZipper<RoiContainer>> parseMap(String input) throws MalformedGeometryFileException {
+		Map<Integer,MZipper<RoiContainer>> result = new HashMap<Integer,MZipper<RoiContainer>>();
 		String in = input.substring(input.indexOf('{')+1, input.indexOf('}'));
 		if (in.length() == 0) return result;
 		try {
@@ -61,7 +61,7 @@ public class MroiListReader {
 				
 				int nextEqualsPosition = in.substring(equalsPosition+1).indexOf('=');
 				if (nextEqualsPosition != -1) nextEqualsPosition+= equalsPosition+1;
-				MZipper<Geometry> entry;
+				MZipper<RoiContainer> entry;
 				if (nextEqualsPosition == -1) {
 					entry = parseZipper(in.substring(equalsPosition+1));
 					in = "";
@@ -81,7 +81,7 @@ public class MroiListReader {
 		return result;
 	}
 
-	public MZipper<Geometry> parseZipper(String input) throws MalformedGeometryFileException {
+	public MZipper<RoiContainer> parseZipper(String input) throws MalformedGeometryFileException {
 		if (input.startsWith("JZipper")) {
 			return parseJZipper(input);
 		} else if (input.startsWith("NZipper")) {
@@ -91,46 +91,46 @@ public class MroiListReader {
 		}
 	}
 	
-	public JZipper<Geometry> parseJZipper(String input) throws MalformedGeometryFileException {
+	public JZipper<RoiContainer> parseJZipper(String input) throws MalformedGeometryFileException {
 		int leftSquareOpening = input.indexOf('[');
 		int leftSquareClosing = input.indexOf(']');
 		String rightInput = input.substring(leftSquareClosing+1);
 		int rightSquareOpening = rightInput.indexOf('[');
 		int rightSquareClosing = rightInput.indexOf(']');
-		List<Geometry> lefts = parseList(input.substring(leftSquareOpening, leftSquareClosing+1));
+		List<RoiContainer> lefts = parseList(input.substring(leftSquareOpening, leftSquareClosing+1));
 		Collections.reverse(lefts);
-		List<Geometry> rights = parseList(rightInput.substring(rightSquareOpening, rightSquareClosing+1));
+		List<RoiContainer> rights = parseList(rightInput.substring(rightSquareOpening, rightSquareClosing+1));
 		Geometry current;
 		try {
 			current = (new WKTReader()).read(input.substring(leftSquareClosing+2, leftSquareClosing+rightSquareOpening));
 		} catch (ParseException e) {
 			throw new MalformedGeometryFileException("Couldn't parse Geometry: " + e.getMessage());
 		}
-		return new JZipper<Geometry>(lefts, current, rights);
+		return new JZipper<RoiContainer>(lefts, new RoiContainer(current), rights);
 	}
 	
-	public NZipper<Geometry> parseNZipper(String input) throws MalformedGeometryFileException {
+	public NZipper<RoiContainer> parseNZipper(String input) throws MalformedGeometryFileException {
 		int leftSquareOpening = input.indexOf('[');
 		int leftSquareClosing = input.indexOf(']');
 		String rightInput = input.substring(leftSquareClosing+1);
 		int rightSquareOpening = rightInput.indexOf('[');
 		int rightSquareClosing = rightInput.indexOf(']');
-		List<Geometry> lefts = parseList(input.substring(leftSquareOpening, leftSquareClosing+1));
+		List<RoiContainer> lefts = parseList(input.substring(leftSquareOpening, leftSquareClosing+1));
 		Collections.reverse(lefts);
-		List<Geometry> rights = parseList(rightInput.substring(rightSquareOpening, rightSquareClosing+1));
-		return new NZipper<Geometry>(lefts, rights);
+		List<RoiContainer> rights = parseList(rightInput.substring(rightSquareOpening, rightSquareClosing+1));
+		return new NZipper<RoiContainer>(lefts, rights);
 	}
 	
-	public List<Geometry> parseList(String input) throws MalformedGeometryFileException {
+	public List<RoiContainer> parseList(String input) throws MalformedGeometryFileException {
 		if (input.equals("[]")) {
-			return new ArrayList<Geometry>(0);
+			return new ArrayList<RoiContainer>(0);
 		}
 		String[] bits = input.substring(input.indexOf('[')+1, input.indexOf(']')).split("\\),");
 		WKTReader rr = new WKTReader();
-		LinkedList<Geometry> ls = new LinkedList<Geometry>();
+		LinkedList<RoiContainer> ls = new LinkedList<RoiContainer>();
 		try {
 			for (int i = 0; i < bits.length; i++) {
-				ls.add(rr.read(bits[i]+")"));
+				ls.add(new RoiContainer(rr.read(bits[i]+")")));
 			}
 		} catch (ParseException e) {
 			throw new MalformedGeometryFileException("Could not parse Geometry: " + e.getMessage());

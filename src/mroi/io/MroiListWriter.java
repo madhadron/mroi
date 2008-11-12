@@ -29,7 +29,11 @@ import java.io.*;
 import ij.IJ;
 
 public class MroiListWriter {
-	public void write(BufferedWriter out, Map<Integer,MZipper<Geometry>> geoms) throws IOException {
-		out.write(geoms.toString());
+	public void write(BufferedWriter out, Map<Integer,MZipper<RoiContainer>> geoms) throws IOException {
+		out.write("(");
+		for (Integer fr : geoms.keySet()) {
+			out.write("(" + fr + " . " + geoms.get(fr).toString());
+		}
+		out.write(")");
 	}
 }

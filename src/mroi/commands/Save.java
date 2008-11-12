@@ -27,15 +27,16 @@ import java.awt.*;
 import mroi.MZipper;
 import ij.WindowManager;
 import mroi.Zipper;
+import mroi.RoiContainer;
 import mroi.io.MroiListWriter;
 import ij.IJ;
 import java.util.*;
 
 import javax.swing.JFileChooser;
 
-public class Save implements Command<Geometry> {
+public class Save implements Command<RoiContainer> {
 
-	public Zipper<Map<Integer,MZipper<Geometry>>> exec(final Zipper<Map<Integer,MZipper<Geometry>>> z, int frame) {
+	public Zipper<Map<Integer,MZipper<RoiContainer>>> exec(final Zipper<Map<Integer,MZipper<RoiContainer>>> z, int frame) {
 //		Frame fr = new Frame();
 //		FileDialog fd = new FileDialog(fr, "Select file to write Rois to", FileDialog.SAVE);
 //		fd.setVisible(true);

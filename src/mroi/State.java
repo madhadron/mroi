@@ -36,26 +36,25 @@ import java.util.*;
 import java.awt.event.*;
 
 public class State implements AbstractState {
-	public Zipper<Map<Integer, MZipper<Geometry>>> rois;
-	public ArrayList<Command<Geometry>> keyCommands = new ArrayList<Command<Geometry>>();
+	public Zipper<Map<Integer, MZipper<RoiContainer>>> rois;
+	public ArrayList<Command<RoiContainer>> keyCommands = new ArrayList<Command<RoiContainer>>();
 	public int currentSlice;
 	public boolean showPreviousSlice;
 
 	public State(int numberOfSlices) {
-		rois = new Zipper<Map<Integer, MZipper<Geometry>>>(null,
-				new HashMap<Integer, MZipper<Geometry>>(), null);
+		rois = new Zipper<Map<Integer, MZipper<RoiContainer>>>(null,
+				new HashMap<Integer, MZipper<RoiContainer>>(), null);
 		for (int i = 1; i <= numberOfSlices; i++) {
-			rois.current.put(i, new NZipper<Geometry>(null, null));
+			rois.current.put(i, new NZipper<RoiContainer>(null, null));
 		}
-		keyCommands.add(new Undo<Geometry>());
-		keyCommands.add(new Redo<Geometry>());
+		keyCommands.add(new Undo<RoiContainer>());
+		keyCommands.add(new Redo<RoiContainer>());
 		keyCommands.add(new Save());
 		keyCommands.add(new Load());
-		keyCommands.add(new Delete<Geometry>());
+		keyCommands.add(new Delete<RoiContainer>());
 		keyCommands.add(new ExportSql());
-		keyCommands.add(new Copy<Geometry>());
+		keyCommands.add(new Copy<RoiContainer>());
 		keyCommands.add(new Paste());
-		keyCommands.add(new PadLine());
 		keyCommands.add(new ToggleVisible());
 		this.currentSlice = 1;
 		this.showPreviousSlice = true;
@@ -77,7 +76,7 @@ public class State implements AbstractState {
 	public void executeCommandOn(String lbl, ImagePlus imp)
 			throws NoSuchCommandException {
 		boolean invoked = false;
-		for (Command<Geometry> c : keyCommands) {
+		for (Command<RoiContainer> c : keyCommands) {
 			if (c.isInvoked(lbl)) {
 				invoked = true;
 				syncRoiFrom(imp);
@@ -93,9 +92,16 @@ public class State implements AbstractState {
 	
 	public Geometry fetchCurrentRoiAsGeometry() {
 		if (rois.current.get(currentSlice) instanceof JZipper)
-			return ((JZipper<Geometry>) rois.current.get(currentSlice)).current;
+			return ((JZipper<RoiContainer>) rois.current.get(currentSlice)).current.getGeometry();
 		else
 			return null;
+	}
+	
+	public RoiContainer fetchCurrentRoi() {
+		if (rois.current.get(currentSlice) instanceof JZipper)
+			return ((JZipper<RoiContainer>) rois.current.get(currentSlice)).current;
+		else
+			return null;	
 	}
 	
 	public Roi fetchCurrentRoiAsRoi() {
@@ -114,21 +120,21 @@ public class State implements AbstractState {
 	public void syncRoiFrom(ImagePlus imp) {
 		if (imp.getRoi() != null) {
 			if (rois.current.get(currentSlice) == null) {
-				rois.current.put(currentSlice, new NZipper<Geometry>(
-						new ArrayList<Geometry>(), new ArrayList<Geometry>()));
+				rois.current.put(currentSlice, new NZipper<RoiContainer>(
+						new ArrayList<RoiContainer>(), new ArrayList<RoiContainer>()));
 			}
 			if (rois.current.get(currentSlice) instanceof JZipper) {
-				Update<Geometry> u = new Update<Geometry>(getRoiFrom(imp));
+				Update<RoiContainer> u = new Update<RoiContainer>(getRoiFrom(imp));
 				rois = u.exec(rois, currentSlice);
 			} else if (rois.current.get(currentSlice) instanceof NZipper) {
-				Add<Geometry> a = new Add<Geometry>(getRoiFrom(imp));
+				Add<RoiContainer> a = new Add<RoiContainer>(getRoiFrom(imp));
 				rois = a.exec(rois, currentSlice);
 			}
 		}
 	}
 
 	public void syncRoiTo(ImagePlus imp) {
-		setRoiOn(imp, fetchCurrentRoiAsGeometry());
+		setRoiOn(imp, fetchCurrentRoi());
 	}
 
 	public void paint(Graphics g, Rectangle visibleWindow, double magnification) {
@@ -144,8 +150,8 @@ public class State implements AbstractState {
 	public void paintFrame(Graphics g, Rectangle visibleWindow, 
 						double magnification, Integer frame,
 						Color validColor, Color invalidColor) {
-		for (Geometry geo : rois.current.get(frame).asListWithoutCurrent()) {
-			drawGeometry(geo, g, visibleWindow, magnification, validColor, invalidColor);
+		for (RoiContainer geo : rois.current.get(frame).asListWithoutCurrent()) {
+			drawGeometry(geo.getGeometry(), g, visibleWindow, magnification, validColor, invalidColor);
 		}
 		
 	}
@@ -179,24 +185,30 @@ public class State implements AbstractState {
 		g.drawLine(px, py, qx, qy);
 	}
 
-	public void setRoiOn(ImagePlus imp, Geometry g) {
+	public void setRoiOn(ImagePlus imp, RoiContainer g) {
 		if (g == null) {
 			imp.setRoi((Roi) null);
 		} else
-			imp.setRoi(geomToRoi(g));
+			imp.setRoi(g.getRoi());
 	}
 
-	public Geometry getRoiFrom(ImagePlus imp) {
+	public RoiContainer getRoiFrom(ImagePlus imp) {
 		if (imp.getRoi() == null)
 			return null;
-		else
-			return roiToGeom(imp.getRoi());
+		else {
+			RoiContainer c = fetchCurrentRoi();
+			if (c == null) {
+				return new RoiContainer(roiToGeom(imp.getRoi()));
+			} else {
+				return new RoiContainer(c.id, roiToGeom(imp.getRoi()), c.predecessor);
+			}
+		}
 	}
 	
 	public Geometry selectAt(Integer x, Integer y) {
 		Point p = gfact.createPoint(new Coordinate(x, y));
 		ContainmentPredicate cpr = new ContainmentPredicate(p);
-		Select<Geometry> sel = new Select<Geometry>(cpr);
+		Select<RoiContainer> sel = new Select<RoiContainer>(cpr);
 		sel.exec(rois, currentSlice);
 		return fetchCurrentRoiAsGeometry();
 	}

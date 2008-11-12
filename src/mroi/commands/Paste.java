@@ -25,7 +25,7 @@ import com.vividsolutions.jts.geom.*;
 
 import mroi.*;
 
-public class Paste extends MutatingCommand<Geometry> {
+public class Paste extends MutatingCommand<RoiContainer> {
 	Singleton b = Singleton.getInstance();
 	public Paste()
 	{	
@@ -38,10 +38,10 @@ public class Paste extends MutatingCommand<Geometry> {
 
 
 	@Override
-	public MZipper<Geometry> operation(MZipper<Geometry> mz)
+	public MZipper<RoiContainer> operation(MZipper<RoiContainer> mz)
 	{
-		MZipper<Geometry> mz2 = mz;
-		for(Geometry iterateur : b.pasteInstance())
+		MZipper<RoiContainer> mz2 = mz;
+		for(RoiContainer iterateur : b.pasteInstance())
 		{
 			mz2 = mz2.add(iterateur);
 			System.out.println(iterateur);

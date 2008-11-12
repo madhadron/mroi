@@ -20,16 +20,17 @@
 package mroi.geometry;
 
 import mroi.Predicate;
+import mroi.RoiContainer;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
-public class ContainmentPredicate implements Predicate<Geometry> {
+public class ContainmentPredicate implements Predicate<RoiContainer> {
 	Point p;
 	public ContainmentPredicate(Point p) {
 		this.p = p;
 	}
-	public boolean apply(Geometry r) {
-		return r.contains((Geometry)p);
+	public boolean apply(RoiContainer r) {
+		return r.getGeometry().contains((Geometry)p);
 	}
 
 }

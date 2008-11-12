@@ -19,6 +19,7 @@
 package mroi.commands;
 
 import java.awt.AWTEvent;
+import mroi.RoiContainer;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.event.KeyEvent;
@@ -40,12 +41,12 @@ import javax.swing.JFileChooser;
 import mroi.MZipper;
 import mroi.Zipper;
 
-public class Load implements Command<Geometry> {
+public class Load implements Command<RoiContainer> {
 
-	public Zipper<Map<Integer,MZipper<Geometry>>> exec(Zipper<Map<Integer,MZipper<Geometry>>> z, int frame) {
+	public Zipper<Map<Integer,MZipper<RoiContainer>>> exec(Zipper<Map<Integer,MZipper<RoiContainer>>> z, int frame) {
 		JFileChooser fc = new JFileChooser();
 		int returnVal = fc.showOpenDialog(WindowManager.getCurrentWindow().getCanvas());
-		Map<Integer,MZipper<Geometry>> newRois;
+		Map<Integer,MZipper<RoiContainer>> newRois;
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			try {
 				File f = new File(fc.getSelectedFile().getCanonicalPath());

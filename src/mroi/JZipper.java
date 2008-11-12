@@ -104,7 +104,19 @@ public class JZipper<T> implements MZipper<T> {
 	public String toString() {
 		List<T> ls = new ArrayList<T>(lefts);
 		Collections.reverse(ls);
-		return "JZipper("+ls.toString()+","+current.toString()+","+rights.toString()+")";
+		StringBuffer sb = new StringBuffer();
+		sb.append("((");
+		for (int i = 0; i < lefts.size(); i++) {
+			if (i != 0) sb.append(" ");
+			sb.append(lefts.get(i).toString());
+		}
+		sb.append(") " + current.toString() + " (");
+		for (int i = 0; i < rights.size(); i++) {
+			if (i != 0) sb.append(" ");
+			sb.append(rights.get(i).toString());
+		}
+		sb.append("))\n");
+		return sb.toString();
 	}
 	
 	public List<T> asListWithoutCurrent() {
