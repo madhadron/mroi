@@ -51,13 +51,14 @@ public class State {
 		keyCommands.add(new Redo<RoiContainer>());
 		keyCommands.add(new Save());
 		keyCommands.add(new LegacyLoad());
+		keyCommands.add(new Load());
 		keyCommands.add(new Delete<RoiContainer>());
 		keyCommands.add(new ExportSql());
 		keyCommands.add(new Copy<RoiContainer>());
 		keyCommands.add(new Paste());
 		keyCommands.add(new ToggleVisible());
 		this.currentSlice = 1;
-		this.showPreviousSlice = true;
+		this.showPreviousSlice = false;
 	}
 
 	public void goToFrameOn(Integer slice, ImagePlus imp) {

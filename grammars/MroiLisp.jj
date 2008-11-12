@@ -1,0 +1,140 @@
+options {
+	STATIC = false;
+	IGNORE_CASE = true;
+}
+
+PARSER_BEGIN(MroiLisp)
+package mroi;
+import java.util.*;
+import mroi.*;
+import com.vividsolutions.jts.geom.*;
+import com.vividsolutions.jts.io.*;
+import java.io.FileInputStream;
+
+
+public class MroiLisp {
+	public WKTReader rr = new WKTReader();
+
+	public Integer previousNonemptyFrame(Map<Integer,MZipper<RoiContainer>> m, int frame) {
+		for (int i = frame-1; i > 0; i--) {
+			if (m.get(i).size() > 0) {
+				return i;
+			}
+		}
+		return null;
+	}
+
+	public RoiContainer findIdInFrame(Map<Integer,MZipper<RoiContainer>> m, int id, int frame) {
+		List<RoiContainer> l = m.get(frame).asList();
+		for (RoiContainer r : l) {
+			if (r.id == id)
+				return r;
+		}
+		return null;
+	}
+
+	public static void main(String args[]) throws Exception {
+		MroiLisp parser = new MroiLisp(new FileInputStream("/Users/ross/test.rois"));
+		System.out.println(parser.roiFile().toString());
+	}
+
+}
+
+PARSER_END(MroiLisp)
+
+SKIP : { " " | "\t" | "\n" | "\r" }
+TOKEN : { 
+	<LPAREN: "("> | 
+	<RPAREN: ")"> | 
+	<DQUOTE: "\""> |
+	<NUMBER: (["0"-"9"])+> |
+	<NULL: "null"> |
+	<GEOMETRY: (<DQUOTE> (["A"-"Z","a"-"z","0"-"9","(",")"," ",","])+ <DQUOTE>)> }
+
+RoiContainer roiContainer(Map<Integer,Integer> predecessorMap) throws Exception :
+{
+	Token tid, tgeom, tprevid;
+	Integer id, previd;
+	Geometry geom;
+}
+{
+	(<NULL> { return null; }) | (<LPAREN> tid=<NUMBER> tgeom=<GEOMETRY> (tprevid=<NUMBER>|tprevid=<NULL>) <RPAREN>
+	{
+		id = Integer.decode(tid.image);
+		geom = rr.read(tgeom.image.substring(1,tgeom.image.length()-1));
+		if (tprevid.image.equalsIgnoreCase("null")) {
+			previd = null;
+		} else {
+			previd = Integer.decode(tprevid.image);
+			predecessorMap.put(id,previd);
+		}
+		return new RoiContainer(id,geom); // Doesn't handle previd right!
+	} )
+} 
+
+ArrayList<RoiContainer> list(Map<Integer,Integer> predecessorMap) throws Exception :
+{ 
+	ArrayList<RoiContainer> arr = new ArrayList<RoiContainer>();
+	RoiContainer r;
+}
+{
+	<LPAREN> (r = roiContainer(predecessorMap) { arr.add(r); })* <RPAREN> 
+	{ 
+		if (arr.size() == 0) {
+			return null;
+		} else {
+			return arr;
+		}
+	}
+}
+
+MZipper<RoiContainer> mzipper(Map<Integer,Integer> p) throws Exception :
+{
+	List<RoiContainer> lefts;
+	RoiContainer current;
+	List<RoiContainer> rights;
+}
+{
+	<LPAREN> lefts=list(p) current=roiContainer(p) rights=list(p) <RPAREN>
+	{
+		if (current==null) {
+			return new NZipper<RoiContainer>(lefts,rights);
+		} else {
+			return new JZipper<RoiContainer>(lefts,current,rights);
+		}
+	}
+}
+
+void frame(Map<Integer,MZipper<RoiContainer>> m, Map<Integer,Integer> p) throws Exception :
+{
+	Token tframe;
+	MZipper<RoiContainer> z;
+}
+{
+	<LPAREN> tframe=<NUMBER> "." z=mzipper(p) <RPAREN>
+	{
+		m.put(Integer.decode(tframe.image), z);
+	}
+}
+
+Map<Integer,MZipper<RoiContainer>> roiFile() throws Exception : { 
+	Map<Integer,Integer> p = new HashMap<Integer,Integer>();
+	Map<Integer,MZipper<RoiContainer>> m = new HashMap<Integer,MZipper<RoiContainer>>();
+}
+{
+	<LPAREN> (frame(m,p))* <RPAREN>
+	{
+		Integer prevFrame;
+		for (Integer frame : m.keySet()) {
+			prevFrame = previousNonemptyFrame(m, frame);
+			if (prevFrame != null) {
+				for (RoiContainer currentRoi : m.get(frame).asList()) {
+					if (p.containsKey(currentRoi.id)) {
+						currentRoi.setPredecessor(findIdInFrame(m, p.get(currentRoi.id), prevFrame));
+					}
+				}
+			}
+		}
+		return m;
+	}
+}

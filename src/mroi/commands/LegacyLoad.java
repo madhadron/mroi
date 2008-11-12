@@ -32,7 +32,6 @@ import java.awt.*;
 
 import mroi.io.MalformedGeometryFileException;
 import mroi.io.MroiListReader;
-import mroi.io.MroiListWriter;
 import ij.*;
 import java.util.*;
 

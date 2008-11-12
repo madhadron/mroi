@@ -1,0 +1,5 @@
+Testsuite: mroi.commands.test.SingleRoiMutatingCommandTest
+Tests run: 2, Failures: 0, Errors: 0, Time elapsed: 0.01 sec
+
+Testcase: testExec took 0.003 sec
+Testcase: testSingleRoiOperation took 0.005 sec

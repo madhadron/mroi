@@ -103,7 +103,7 @@ public class MroiListReader {
 		Geometry current;
 		try {
 			current = (new WKTReader()).read(input.substring(leftSquareClosing+2, leftSquareClosing+rightSquareOpening));
-		} catch (ParseException e) {
+		} catch (com.vividsolutions.jts.io.ParseException e) {
 			throw new MalformedGeometryFileException("Couldn't parse Geometry: " + e.getMessage());
 		}
 		return new JZipper<RoiContainer>(lefts, new RoiContainer(current), rights);
@@ -132,7 +132,7 @@ public class MroiListReader {
 			for (int i = 0; i < bits.length; i++) {
 				ls.add(new RoiContainer(rr.read(bits[i]+")")));
 			}
-		} catch (ParseException e) {
+		} catch (com.vividsolutions.jts.io.ParseException e) {
 			throw new MalformedGeometryFileException("Could not parse Geometry: " + e.getMessage());
 		}
 		return ls;

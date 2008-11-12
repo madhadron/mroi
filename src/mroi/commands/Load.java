@@ -19,6 +19,7 @@
 package mroi.commands;
 
 import java.awt.AWTEvent;
+import mroi.MroiLisp;
 import mroi.RoiContainer;
 import java.awt.FileDialog;
 import java.awt.Frame;
@@ -49,18 +50,19 @@ public class Load implements Command<RoiContainer> {
 		Map<Integer,MZipper<RoiContainer>> newRois;
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			try {
-				File f = new File(fc.getSelectedFile().getCanonicalPath());
-				BufferedReader out = new BufferedReader(new FileReader(f));
-				MroiListReader m = new MroiListReader();
-				newRois = m.read(out);
-				out.close();
+				FileInputStream f = new FileInputStream(fc.getSelectedFile().getCanonicalPath()); 
+				MroiLisp parser = new MroiLisp(f);
+				parser.ReInit(f);
+	            newRois = parser.roiFile();
 				z.rights.clear();
 				z.rights.add(newRois);
 				z = z.right();
 				return z;
 			} catch (IOException e) {
 				IJ.error("Couldn't open from " + fc.getSelectedFile().getName() + ": " + e.getMessage());
-			} catch (MalformedGeometryFileException e) {
+			} catch (mroi.ParseException e) {
+				IJ.error("Failed in parsing: " + e.getMessage());
+			} catch (Exception e) {
 				IJ.error("Malformed input file: " + e.getMessage());
 			}
 		}
@@ -68,7 +70,7 @@ public class Load implements Command<RoiContainer> {
 	}
 
 	public boolean isInvoked(String lbl) {
-		return lbl.equalsIgnoreCase("legacyload");
+		return lbl.equalsIgnoreCase("load");
 	}
 
 

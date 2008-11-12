@@ -1,0 +1,10 @@
+Testsuite: mroi.geometry.ContainmentPredicateTest
+Tests run: 1, Failures: 0, Errors: 1, Time elapsed: 0.003 sec
+
+Testcase: initializationError0 took 0.002 sec
+	Caused an ERROR
+No runnable methods
+java.lang.Exception: No runnable methods
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:494)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:494)
+

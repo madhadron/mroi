@@ -1,4 +1,4 @@
-<project default="build">
+<project default="compile">
 
 <property name="version" value="1.0.1"/>
 
@@ -8,6 +8,11 @@
 
 <target name="compile">
   <mkdir dir="plugins" />
+  <javacc target="grammars/MroiLisp.jj"
+	outputdirectory="src/mroi"
+	javacchome="/Users/ross/Library/Java/Extensions"
+	static="false"
+  />
   <javac srcdir="src" destdir="plugins">
     <classpath>
       <pathelement location="plugins/" />
