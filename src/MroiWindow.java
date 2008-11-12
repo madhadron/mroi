@@ -22,6 +22,8 @@ import ij.gui.StackWindow;
 
 import java.awt.event.AdjustmentEvent;
 
+import mroi.MroiCanvas;
+
 public class MroiWindow extends StackWindow implements AdjustmentListener {
 	MroiCanvas can;
 	ImagePlus imp;

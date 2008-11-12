@@ -39,6 +39,7 @@ public class State implements AbstractState {
 	public Zipper<Map<Integer, MZipper<Geometry>>> rois;
 	public ArrayList<Command<Geometry>> keyCommands = new ArrayList<Command<Geometry>>();
 	public int currentSlice;
+	public boolean showPreviousSlice;
 
 	public State(int numberOfSlices) {
 		rois = new Zipper<Map<Integer, MZipper<Geometry>>>(null,
@@ -55,7 +56,9 @@ public class State implements AbstractState {
 		keyCommands.add(new Copy<Geometry>());
 		keyCommands.add(new Paste());
 		keyCommands.add(new PadLine());
+		keyCommands.add(new ToggleVisible());
 		this.currentSlice = 1;
+		this.showPreviousSlice = true;
 	}
 
 	public void goToFrameOn(Integer slice, ImagePlus imp) {
@@ -99,6 +102,15 @@ public class State implements AbstractState {
 		return geomToRoi(fetchCurrentRoiAsGeometry());
 	}
 
+	public Integer previousNonemptyFrame() {
+		for (int i = currentSlice-1; i > 0; i--) {
+			if (rois.current.get(i).size() > 0) {
+				return i;
+			}
+		}
+		return null;
+	}
+	
 	public void syncRoiFrom(ImagePlus imp) {
 		if (imp.getRoi() != null) {
 			if (rois.current.get(currentSlice) == null) {
@@ -120,17 +132,31 @@ public class State implements AbstractState {
 	}
 
 	public void paint(Graphics g, Rectangle visibleWindow, double magnification) {
-		for (Geometry geo : rois.current.get(currentSlice).asListWithoutCurrent()) {
-			drawGeometry(geo, g, visibleWindow, magnification);
+		paintFrame(g, visibleWindow, magnification, currentSlice, Color.green, Color.red);
+		if (showPreviousSlice) {
+			Integer prevFrame = previousNonemptyFrame();
+			if (prevFrame != null)
+				paintFrame(g, visibleWindow, magnification, previousNonemptyFrame(),
+						Color.blue, Color.gray);
 		}
+	}
+	
+	public void paintFrame(Graphics g, Rectangle visibleWindow, 
+						double magnification, Integer frame,
+						Color validColor, Color invalidColor) {
+		for (Geometry geo : rois.current.get(frame).asListWithoutCurrent()) {
+			drawGeometry(geo, g, visibleWindow, magnification, validColor, invalidColor);
+		}
+		
 	}
 
 	public void drawGeometry(Geometry geom, Graphics g,
-			Rectangle visibleWindow, double magnification) {
+			Rectangle visibleWindow, double magnification,
+			Color validColor, Color invalidColor) {
 		if (geom.isValid()) {
-			g.setColor(Color.green);
+			g.setColor(validColor);
 		} else {
-			g.setColor(Color.red);
+			g.setColor(invalidColor);
 		}
 		drawUnselectedRoi(geomToRoi(geom), g, visibleWindow, magnification);
 	}
@@ -173,5 +199,9 @@ public class State implements AbstractState {
 		Select<Geometry> sel = new Select<Geometry>(cpr);
 		sel.exec(rois, currentSlice);
 		return fetchCurrentRoiAsGeometry();
+	}
+	
+	public void togglePreviousFrameVisible() {
+		this.showPreviousSlice = !showPreviousSlice;
 	}
 }
