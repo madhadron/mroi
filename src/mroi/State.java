@@ -35,7 +35,7 @@ import com.vividsolutions.jts.geom.*;
 import java.util.*;
 import java.awt.event.*;
 
-public class State implements AbstractState {
+public class State {
 	public Zipper<Map<Integer, MZipper<RoiContainer>>> rois;
 	public ArrayList<Command<RoiContainer>> keyCommands = new ArrayList<Command<RoiContainer>>();
 	public int currentSlice;
@@ -129,6 +129,7 @@ public class State implements AbstractState {
 			} else if (rois.current.get(currentSlice) instanceof NZipper) {
 				Add<RoiContainer> a = new Add<RoiContainer>(getRoiFrom(imp));
 				rois = a.exec(rois, currentSlice);
+				fetchCurrentRoi().setPredecessor(choosePreviousRoi());
 			}
 		}
 	}
@@ -141,9 +142,11 @@ public class State implements AbstractState {
 		paintFrame(g, visibleWindow, magnification, currentSlice, Color.green, Color.red);
 		if (showPreviousSlice) {
 			Integer prevFrame = previousNonemptyFrame();
-			if (prevFrame != null)
+			if (prevFrame != null) {
 				paintFrame(g, visibleWindow, magnification, previousNonemptyFrame(),
 						Color.blue, Color.gray);
+				drawCentroidConnections(g, visibleWindow, magnification, currentSlice, Color.orange);
+			}
 		}
 	}
 	
@@ -154,6 +157,27 @@ public class State implements AbstractState {
 			drawGeometry(geo.getGeometry(), g, visibleWindow, magnification, validColor, invalidColor);
 		}
 		
+	}
+	
+	public void drawCentroidConnections(Graphics g, Rectangle visibleWindow,
+			double magnification, Integer frame, Color color) {
+		for (RoiContainer r : rois.current.get(frame).asList()) {
+			drawCentroidConnection(g, visibleWindow, magnification, r, color);
+		}
+	}
+	
+	public void drawCentroidConnection(Graphics g, Rectangle visibleWindow,
+			double magnification, RoiContainer roi, Color color) {
+		if (roi.predecessor != null) {
+			Point pcentroid = roi.getGeometry().getCentroid();
+			Point qcentroid = roi.predecessor.getGeometry().getCentroid();
+			int px = (int) Math.round(magnification*(pcentroid.getX() - visibleWindow.x));
+			int py = (int) Math.round(magnification*(pcentroid.getY() - visibleWindow.y));
+			int qx = (int) Math.round(magnification*(qcentroid.getX() - visibleWindow.x));
+			int qy = (int) Math.round(magnification*(qcentroid.getY() - visibleWindow.y));
+			g.setColor(color);
+			g.drawLine(px, py, qx, qy);
+		}
 	}
 
 	public void drawGeometry(Geometry geom, Graphics g,
@@ -213,7 +237,46 @@ public class State implements AbstractState {
 		return fetchCurrentRoiAsGeometry();
 	}
 	
+	public Integer getCurrentSlice() { return currentSlice; }
+	
+	public RoiContainer chooseRoiAt(Integer x, Integer y, int frame) {
+		Point p = gfact.createPoint(new Coordinate(x, y));
+		ContainmentPredicate cpr = new ContainmentPredicate(p);
+		MZipper<RoiContainer> res =  rois.current.get(frame).select(cpr);
+		if (res instanceof JZipper)
+			return ((JZipper<RoiContainer>)res).current;
+		else
+			return null;
+	}
+
+	public RoiContainer choosePreviousRoi() {
+		Geometry current = fetchCurrentRoiAsGeometry();
+		Integer previousFrame = previousNonemptyFrame();
+		if (previousFrame == null) return null;
+		else {
+			List<RoiContainer> previousRois = rois.current.get(previousFrame).asList();
+			RoiContainer res = previousRois.get(0);
+			double maxarea = current.intersection(res.getGeometry()).getArea();
+			double trialarea;
+			RoiContainer test;
+			for (int i = 1; i < previousRois.size(); i++) {
+				test = previousRois.get(i);
+				trialarea = current.intersection(previousRois.get(i).getGeometry()).getArea();
+				if (trialarea > maxarea) {
+					res = test;
+					maxarea = trialarea;
+				}
+			}
+			return res;
+		}
+	}
+	
 	public void togglePreviousFrameVisible() {
 		this.showPreviousSlice = !showPreviousSlice;
 	}
+	
+	public boolean previousSliceVisible() {
+		return this.showPreviousSlice;
+	}
+
 }

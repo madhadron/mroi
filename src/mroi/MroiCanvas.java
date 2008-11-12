@@ -37,7 +37,7 @@ import java.util.*;
 import java.awt.event.*;
 
 public class MroiCanvas extends ImageCanvas {
-	public AbstractState state;
+	public State state;
 	public MouseController mc;
 	public ImagePlus imp;
 
@@ -80,5 +80,35 @@ public class MroiCanvas extends ImageCanvas {
 			// dropped when the user clicks outside of it.
 			mc.mousePressedOnAt(imp, x, y, e.getButton(), e.getModifiers());
 		}
+	}
+	
+	public void mouseReleased(MouseEvent e) {
+		Integer x = offScreenX(e.getX());
+		Integer y = offScreenY(e.getY());
+		Rectangle rect = getSrcRect();
+		if (x < rect.x || x > rect.x + rect.width || y < rect.y
+				|| y > rect.y + rect.width) {
+			// If the mouse is outside the actual image, 
+			// just pass the click to the superclass.
+			super.mouseReleased(e);
+		} else if (e.getButton() == MouseEvent.BUTTON1) {
+			// This is necessary to make ImageJ not drop
+			// the current ROI when we click outside of it
+			// with the left button.
+			Roi current = imp.getRoi();
+			super.mouseReleased(e);
+			if (current != null) {
+				imp.setRoi(current);
+			}
+			imp.updateAndRepaintWindow();
+		} else {
+			// If the right mousebutton (BUTTON3) is pressed, 
+			// go through selecting a new polygon.
+			// If the left is pressed, go through manipualting a 
+			// polygon, and make sure it isn't
+			// dropped when the user clicks outside of it.
+			mc.mouseReleasedOnAt(imp, x, y, e.getButton(), e.getModifiers());
+		}
+
 	}
 }

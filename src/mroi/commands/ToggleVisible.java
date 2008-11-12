@@ -5,7 +5,7 @@ import mroi.RoiContainer;
 import ij.WindowManager;
 import ij.gui.ImageCanvas;
 import ij.gui.MessageDialog;
-import mroi.AbstractState;
+import mroi.State;
 import mroi.MZipper;
 import mroi.NoSuchCommandException;
 import com.vividsolutions.jts.geom.Geometry;
@@ -22,7 +22,7 @@ public class ToggleVisible extends NonmutatingCommand<RoiContainer> {
 	public MZipper operation(MZipper mz) {
 		ImageCanvas can = WindowManager.getCurrentWindow().getCanvas();
 		if (can instanceof MroiCanvas) {
-			AbstractState c = ((MroiCanvas)can).state;
+			State c = ((MroiCanvas)can).state;
 			c.togglePreviousFrameVisible();
 		}
 		return mz;

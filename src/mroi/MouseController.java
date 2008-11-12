@@ -13,8 +13,9 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 public class MouseController {
-	AbstractState state;
-	public MouseController(AbstractState st) {
+	private RoiContainer selected;
+	State state;
+	public MouseController(State st) {
 		this.state = st;
 	}
 	
@@ -22,9 +23,24 @@ public class MouseController {
 	public void mousePressedOnAt(ImagePlus imp, Integer x, Integer y,
 			int button, int modifiers) {
 		if (button == MouseEvent.BUTTON3 || button == MouseEvent.BUTTON2) {
-			state.syncRoiFrom(imp);
-			state.selectAt(x, y);
-			state.syncRoiTo(imp);
+			if (state.previousSliceVisible()) {
+				selected = state.chooseRoiAt(x, y, state.getCurrentSlice());
+			} else {
+				state.syncRoiFrom(imp);
+				state.selectAt(x, y);
+				state.syncRoiTo(imp);
+			}
+		}
+	}
+	
+	public void mouseReleasedOnAt(ImagePlus imp, Integer x, Integer y,
+			int button, int modifiers) {
+		if (button == MouseEvent.BUTTON3 || button == MouseEvent.BUTTON2) {
+			if (state.previousSliceVisible() && selected != null) {
+				RoiContainer prev = state.chooseRoiAt(x, y, state.previousNonemptyFrame());
+				selected.setPredecessor(prev);
+				imp.updateAndRepaintWindow();
+			}
 		}
 	}
 }

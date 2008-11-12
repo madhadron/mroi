@@ -35,6 +35,11 @@ public class RoiContainer {
 		}
 	}
 	
+	public RoiContainer setPredecessor(RoiContainer pr) {
+		this.predecessor = pr;
+		return pr;
+	}
+	
 	public String toString() {
 		return("(" + id + " \"" + roi.toString() + "\" " + getPredecessorId() + ")");
 	}
