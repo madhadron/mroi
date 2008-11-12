@@ -50,7 +50,7 @@ public class State {
 		keyCommands.add(new Undo<RoiContainer>());
 		keyCommands.add(new Redo<RoiContainer>());
 		keyCommands.add(new Save());
-		keyCommands.add(new Load());
+		keyCommands.add(new LegacyLoad());
 		keyCommands.add(new Delete<RoiContainer>());
 		keyCommands.add(new ExportSql());
 		keyCommands.add(new Copy<RoiContainer>());

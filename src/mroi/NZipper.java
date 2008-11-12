@@ -100,7 +100,7 @@ public class NZipper<T> implements MZipper<T> {
 				sb.append(" ");
 			sb.append(lefts.get(i).toString());
 		}
-		sb.append(") () (");
+		sb.append(") null (");
 		for (int i = 0; i < rights.size(); i++) {
 			if (i != 0)
 				sb.append(" ");

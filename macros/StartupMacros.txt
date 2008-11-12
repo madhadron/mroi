@@ -6,6 +6,10 @@ macro "Load Mrois [o]" {
       call("MroiCommand.run", "load");
 }
 
+macro "Load old Mroi file" {
+      call("MroiCommand.run", "legacyload");
+}
+
 macro "Save Mrois [s]" {
       call("MroiCommand.run", "save");
 }

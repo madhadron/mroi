@@ -41,7 +41,7 @@ import javax.swing.JFileChooser;
 import mroi.MZipper;
 import mroi.Zipper;
 
-public class Load implements Command<RoiContainer> {
+public class LegacyLoad implements Command<RoiContainer> {
 
 	public Zipper<Map<Integer,MZipper<RoiContainer>>> exec(Zipper<Map<Integer,MZipper<RoiContainer>>> z, int frame) {
 		JFileChooser fc = new JFileChooser();
