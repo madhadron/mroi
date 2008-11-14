@@ -18,6 +18,8 @@ package mroi;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.font.*;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.util.LinkedList;
@@ -34,12 +36,14 @@ import com.vividsolutions.jts.geom.*;
 
 import java.util.*;
 import java.awt.event.*;
+import java.awt.font.TextLayout;
 
 public class State {
 	public Zipper<Map<Integer, MZipper<RoiContainer>>> rois;
 	public ArrayList<Command<RoiContainer>> keyCommands = new ArrayList<Command<RoiContainer>>();
 	public int currentSlice;
 	public boolean showPreviousSlice;
+	public boolean showRoiIds;
 
 	public State(int numberOfSlices) {
 		rois = new Zipper<Map<Integer, MZipper<RoiContainer>>>(null,
@@ -57,8 +61,10 @@ public class State {
 		keyCommands.add(new Copy<RoiContainer>());
 		keyCommands.add(new Paste());
 		keyCommands.add(new ToggleVisible());
+		keyCommands.add(new ToggleNumbers());
 		this.currentSlice = 1;
 		this.showPreviousSlice = false;
+		this.showRoiIds = false;
 	}
 
 	public void goToFrameOn(Integer slice, ImagePlus imp) {
@@ -149,6 +155,9 @@ public class State {
 				drawCentroidConnections(g, visibleWindow, magnification, currentSlice, Color.orange);
 			}
 		}
+		if (showRoiIds) {
+			paintRoiNumbers(g,visibleWindow,magnification,currentSlice,Color.green, Color.red);
+		}
 	}
 	
 	public void paintFrame(Graphics g, Rectangle visibleWindow, 
@@ -160,6 +169,25 @@ public class State {
 		
 	}
 	
+
+	public void paintRoiNumber(Graphics g, Rectangle visWindow, double mag, RoiContainer r, Color validColor, Color invalidColor) {
+		if (r.getGeometry().isValid()) {
+			g.setColor(validColor);
+		} else {
+			g.setColor(invalidColor);
+		}
+		g.drawString(r.id.toString(), getCentroidX(visWindow,mag,r), getCentroidY(visWindow,mag,r));
+	}
+	
+	public void paintRoiNumbers(Graphics g, Rectangle visibleWindow,
+			double magnification, Integer frame,
+			Color validColor, Color invalidColor) {
+		for (RoiContainer geo : rois.current.get(frame).asList()) {
+			paintRoiNumber(g,visibleWindow,magnification,geo,validColor,invalidColor);
+		}
+	}
+
+	
 	public void drawCentroidConnections(Graphics g, Rectangle visibleWindow,
 			double magnification, Integer frame, Color color) {
 		for (RoiContainer r : rois.current.get(frame).asList()) {
@@ -167,15 +195,24 @@ public class State {
 		}
 	}
 	
+	public int getCentroidX(Rectangle visibleWindow, double magnification, RoiContainer roi) {
+		Point centroid = roi.getGeometry().getCentroid();
+		return ((int) Math.round(magnification*(centroid.getX() - visibleWindow.x)));
+	}
+	
+	public int getCentroidY(Rectangle visibleWindow, double magnification, RoiContainer roi) {
+		Point centroid = roi.getGeometry().getCentroid();
+		return((int) Math.round(magnification*(centroid.getY() - visibleWindow.y)));
+		
+	}
+	
 	public void drawCentroidConnection(Graphics g, Rectangle visibleWindow,
 			double magnification, RoiContainer roi, Color color) {
 		if (roi.predecessor != null) {
-			Point pcentroid = roi.getGeometry().getCentroid();
-			Point qcentroid = roi.predecessor.getGeometry().getCentroid();
-			int px = (int) Math.round(magnification*(pcentroid.getX() - visibleWindow.x));
-			int py = (int) Math.round(magnification*(pcentroid.getY() - visibleWindow.y));
-			int qx = (int) Math.round(magnification*(qcentroid.getX() - visibleWindow.x));
-			int qy = (int) Math.round(magnification*(qcentroid.getY() - visibleWindow.y));
+			int px = getCentroidX(visibleWindow,magnification,roi);
+			int py = getCentroidX(visibleWindow,magnification,roi);
+			int qx = getCentroidX(visibleWindow,magnification,roi.predecessor);
+			int qy = getCentroidY(visibleWindow,magnification,roi.predecessor);
 			g.setColor(color);
 			g.drawLine(px, py, qx, qy);
 		}
@@ -274,6 +311,10 @@ public class State {
 	
 	public void togglePreviousFrameVisible() {
 		this.showPreviousSlice = !showPreviousSlice;
+	}
+	
+	public void toggleShowRoiIds() {
+		this.showRoiIds = !showRoiIds;
 	}
 	
 	public boolean previousSliceVisible() {

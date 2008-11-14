@@ -10,7 +10,7 @@
   <mkdir dir="plugins" />
   <javacc target="grammars/MroiLisp.jj"
 	outputdirectory="src/mroi"
-	javacchome="/Users/ross/Library/Java/Extensions"
+	javacchome="lib"
 	static="false"
   />
   <javac srcdir="src" destdir="plugins">

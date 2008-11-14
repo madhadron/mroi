@@ -36,7 +36,12 @@ import mroi.RoiContainer;
 import javax.swing.JFileChooser;
 
 public class ExportSql implements Command<RoiContainer> {
-
+	final String insertPoint = "INSERT INTO points(id) VALUES(%d);\n";
+	final String insertFrame = "INSERT INTO frames(id,point) VALUES (%d,%d);\n";
+	final String insertPolygon = "INSERT INTO polygons(id,shape,frame,point,predecessor) " +
+		"VALUES(%d,GeomFromText('%s'),%d,%d,%s);\n";
+	static final Formatter f = new Formatter();
+	
 	public Zipper<Map<Integer, MZipper<RoiContainer>>> exec(
 			final Zipper<Map<Integer, MZipper<RoiContainer>>> z, int frame) {
 		JFileChooser fc = new JFileChooser();
@@ -53,30 +58,21 @@ public class ExportSql implements Command<RoiContainer> {
 				File f = new File(fc.getSelectedFile().getCanonicalPath());
 				BufferedWriter out = new BufferedWriter(new FileWriter(f));
 				Map<Integer, MZipper<RoiContainer>> rs = z.current;
-				out.append("INSERT INTO points(pointid) VALUES (" + point
-						+ ");\n");
+
+				
+				out.append(String.format(insertPoint, point));
 				for (Integer e : rs.keySet()) {
 					MZipper<RoiContainer> zp = rs.get(e);
 					if (zp.size() > 0) {
-						out
-								.append("INSERT INTO frames (frameid,framepoint) VALUES ("
-										+ e + "," + point + ");\n");
+						out.append(String.format(insertFrame, e, point));
 						for (RoiContainer g : zp.asList()) {
 							if (g.getGeometry().isValid()) {
-								out
-										.append("INSERT INTO polygons (polyshape,polyframe,polypoint) VALUES ("
-												+ "GeomFromText('"
-												+ g.getGeometry().toText()
-												+ "'), "
-												+ e
-												+ ", "
-												+ point
-												+ ");\n");
+								out.append(String.format(insertPolygon, g.id, g.getGeometry().toString(),
+										e, point, g.getPredecessorIdAsString()));
 							}
 						}
 					}
 				}
-				out.append("SELECT updatematviews();");
 				out.flush();
 			} catch (IOException e) {
 				IJ.error("Couldn't write SQL to "

@@ -42,3 +42,7 @@ macro "Initial setup [q]" {
 macro "Toggle previous frame [t]" {
 	call("MroiCommand.run", "togglevisible");
 }
+
+macro "Toggle ROI IDs [n]" {
+	call("MroiCommand.run", "togglenumbers");
+}
