@@ -62,6 +62,7 @@ public class State {
 		keyCommands.add(new Paste());
 		keyCommands.add(new ToggleVisible());
 		keyCommands.add(new ToggleNumbers());
+		keyCommands.add(new GoToID());
 		this.currentSlice = 1;
 		this.showPreviousSlice = false;
 		this.showRoiIds = false;
@@ -173,10 +174,13 @@ public class State {
 	public void paintRoiNumber(Graphics g, Rectangle visWindow, double mag, RoiContainer r, Color validColor, Color invalidColor) {
 		if (r.getGeometry().isValid()) {
 			g.setColor(validColor);
+			g.drawString(r.id.toString(), getCentroidX(visWindow,mag,r), getCentroidY(visWindow,mag,r));
 		} else {
 			g.setColor(invalidColor);
+			Coordinate c = r.getGeometry().getCoordinate();
+			g.drawString(r.id.toString(), toScreenX(visWindow,mag,c.x), toScreenY(visWindow,mag,c.y));
 		}
-		g.drawString(r.id.toString(), getCentroidX(visWindow,mag,r), getCentroidY(visWindow,mag,r));
+
 	}
 	
 	public void paintRoiNumbers(Graphics g, Rectangle visibleWindow,
@@ -195,14 +199,23 @@ public class State {
 		}
 	}
 	
+	public int toScreenX(Rectangle visibleWindow, double magnification, double x) {
+		return ((int) Math.round(magnification*(x - visibleWindow.x)));
+		
+	}
+	
+	public int toScreenY(Rectangle visibleWindow, double magnification, double y) {
+		return((int) Math.round(magnification*(y - visibleWindow.y)));
+		
+	}
+	
 	public int getCentroidX(Rectangle visibleWindow, double magnification, RoiContainer roi) {
-		Point centroid = roi.getGeometry().getCentroid();
-		return ((int) Math.round(magnification*(centroid.getX() - visibleWindow.x)));
+		return toScreenX(visibleWindow,magnification,roi.getGeometry().getCentroid().getX());
 	}
 	
 	public int getCentroidY(Rectangle visibleWindow, double magnification, RoiContainer roi) {
 		Point centroid = roi.getGeometry().getCentroid();
-		return((int) Math.round(magnification*(centroid.getY() - visibleWindow.y)));
+		return toScreenY(visibleWindow,magnification,centroid.getY());
 		
 	}
 	
@@ -210,7 +223,7 @@ public class State {
 			double magnification, RoiContainer roi, Color color) {
 		if (roi.predecessor != null) {
 			int px = getCentroidX(visibleWindow,magnification,roi);
-			int py = getCentroidX(visibleWindow,magnification,roi);
+			int py = getCentroidY(visibleWindow,magnification,roi);
 			int qx = getCentroidX(visibleWindow,magnification,roi.predecessor);
 			int qy = getCentroidY(visibleWindow,magnification,roi.predecessor);
 			g.setColor(color);

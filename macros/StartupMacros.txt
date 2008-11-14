@@ -46,3 +46,7 @@ macro "Toggle previous frame [t]" {
 macro "Toggle ROI IDs [n]" {
 	call("MroiCommand.run", "togglenumbers");
 }
+
+macro "Go to ID... [g]" {
+	call("MroiCommand.run", "gotoid");
+}
