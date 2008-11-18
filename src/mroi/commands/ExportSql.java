@@ -68,7 +68,7 @@ public class ExportSql implements Command<RoiContainer> {
 						for (RoiContainer g : zp.asList()) {
 							if (g.getGeometry().isValid()) {
 								out.append(String.format(insertPolygon, g.id, g.getGeometry().toString(),
-										e, point, g.getPredecessorId().toString()));
+										e, point, g.getPredecessorIdAsString()));
 							}
 						}
 					}

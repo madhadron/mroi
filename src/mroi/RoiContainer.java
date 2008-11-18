@@ -35,6 +35,14 @@ public class RoiContainer {
 		}
 	}
 	
+	public String getPredecessorIdAsString() {
+		if (predecessor == null) {
+			return "null";
+		} else {
+			return predecessor.id.toString();
+		}
+	}
+	
 
 	public RoiContainer setPredecessor(RoiContainer pr) {
 		this.predecessor = pr;
