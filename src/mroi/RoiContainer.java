@@ -5,12 +5,13 @@ import static mroi.geometry.GeometryUtilities.*;
 import ij.gui.Roi;
 
 public class RoiContainer {
-	static int counter = 1;
+	public static int counter = 1;
 	Geometry roi;
 	public Integer id;
 	public RoiContainer predecessor;
 	
 	public RoiContainer(Integer id, Geometry roi, RoiContainer pred) {
+		if (id > counter) counter = id+1;
 		this.roi = roi;
 		this.id = id;
 		this.predecessor = pred;
