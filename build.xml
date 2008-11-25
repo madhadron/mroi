@@ -13,6 +13,11 @@
 	javacchome="lib"
 	static="false"
   />
+  <javacc target="grammars/LispToLists.jj"
+	outputdirectory="src/mroi/common"
+	javacchome="lib"
+	static="false"
+  />
   <javac srcdir="src" destdir="plugins">
     <classpath>
       <pathelement location="plugins/" />

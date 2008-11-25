@@ -1,0 +1,78 @@
+options {
+	STATIC = false;
+	IGNORE_CASE = true;
+}
+
+PARSER_BEGIN(LispToLists)
+
+package mroi.common;
+import java.util.*;
+import java.io.StringReader;
+
+public class LispToLists {
+    public static abstract class LispNode {}
+    public static class LispString extends LispToLists.LispNode {
+	public String val;
+	public LispString(String str) {
+	    this.val = str;
+	}
+	public String toString() { 
+	    if (val.contains(" ") ||
+		val.contains("\t") ||
+		val.contains("\r") ||
+		val.contains("\n")) {
+		return("\"" + val +"\"");
+	    } else { return val; }		       
+	}
+    }
+    
+    
+    public static class LispList extends LispToLists.LispNode {
+	public LinkedList<LispToLists.LispNode> val;
+	@Override
+	public String toString() { 
+	   String s = "(";
+	   boolean middle = false;
+	   for (LispNode n : val) {
+	       if (middle) { s += " ";}
+	       middle = true;
+               s += n.toString();
+           }
+           s += ")";
+	   return s; }
+	public LispList() {
+	    val = new LinkedList<LispToLists.LispNode>();
+	}
+	public LispList(Collection<LispToLists.LispNode> c) {
+	    val = new LinkedList<LispToLists.LispNode>(c);
+	}
+    }
+    
+    public static void main(String args[]) throws Exception {
+	LispToLists parser = new LispToLists(new StringReader(args[0]));
+	System.out.println(parser.read().toString());
+    }    
+}
+
+PARSER_END(LispToLists)
+
+SKIP : {" "|"\t"|"\n"|"\r"}
+TOKEN : {
+  <LPAREN: "("> |
+  <RPAREN: ")"> |
+  <DQUOTE: "\""> |
+  <ID: (["0"-"9", "A"-"Z", "a"-"z", "-", ",", ".", "?", "!", "_", ">", "<"])+> |
+  <QUOTED_STRING: "\"" (~["\""])+ "\"" >
+}
+
+LispNode read() throws Exception :
+{
+	LispNode res;
+	Token t;
+	LispNode temp;
+}
+{
+    <LPAREN> { res = new LispList(); } (temp = read() { ((LispList)res).val.add(temp); })* <RPAREN> { return res; } | 
+    t = <ID> { return new LispString(t.image); } |
+	t = <QUOTED_STRING> { return new LispString(t.image.substring(1,(t.image.length()-1))); }
+}

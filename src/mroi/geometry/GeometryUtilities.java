@@ -15,7 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package mroi.geometry;
 
@@ -32,79 +32,85 @@ public class GeometryUtilities {
 	static public GeometryFactory gfact = new GeometryFactory();
 
 	public static Geometry roiToGeom(Roi r) {
-	    java.awt.Polygon p = sparsifyPolygon(r.getPolygon(), 5);
-	    /*	    java.awt.Polygon p = r.getPolygon();*/
-		Coordinate[] cs = (Coordinate[]) Array.newInstance(Coordinate.class, p.npoints+1);
-	    for (int i = 0; i < p.npoints; i++) {
-	    	cs[i] = new Coordinate(p.xpoints[i], p.ypoints[i]);
-	    }
-	    cs[p.npoints] = new Coordinate(p.xpoints[0], p.ypoints[0]);
-	    Geometry g = gfact.createPolygon(gfact.createLinearRing(cs), null);
-	    return g;
+		java.awt.Polygon p = sparsifyPolygon(r.getPolygon(), 5);
+		if (p.npoints < 4) p = r.getPolygon();
+		if (r.getPolygon().npoints < 4) return null;
+		/* java.awt.Polygon p = r.getPolygon(); */
+		Coordinate[] cs = (Coordinate[]) Array.newInstance(Coordinate.class,
+				p.npoints + 1);
+		for (int i = 0; i < p.npoints; i++) {
+			cs[i] = new Coordinate(p.xpoints[i], p.ypoints[i]);
+		}
+		cs[p.npoints] = new Coordinate(p.xpoints[0], p.ypoints[0]);
+		try {
+			Geometry g = gfact.createPolygon(gfact.createLinearRing(cs), null);
+			return g;
+		} catch (Exception e) {
+			return null;
+		}
 	}
-	
+
 	public static Roi geomToRoi(Geometry g) {
 		Coordinate[] cs = g.getCoordinates();
 		int n = cs.length - 1;
 		int[] xs = new int[n];
 		int[] ys = new int[n];
 		for (int i = 0; i < n; i++) {
-			xs[i] = (int)cs[i].x;
-			ys[i] = (int)cs[i].y;
+			xs[i] = (int) cs[i].x;
+			ys[i] = (int) cs[i].y;
 		}
 		return new PolygonRoi(xs, ys, n, PolygonRoi.POLYGON);
 	}
 
+	public static java.awt.Polygon sparsifyPolygon(java.awt.Polygon p,
+			double minDistance) {
+		int n = p.npoints;
+		int[] xs = p.xpoints;
+		ArrayList<Integer> nxs = new ArrayList<Integer>(n);
+		int[] ys = p.ypoints;
+		ArrayList<Integer> nys = new ArrayList<Integer>(n);
+		nxs.add(xs[0]);
+		nys.add(ys[0]);
+		int px = xs[0];
+		int py = ys[0];
+		int qx, qy;
+		double dist;
+		for (int i = 1; i < n; i++) {
+			qx = xs[i];
+			qy = ys[i];
+			dist = Math.sqrt((qx - px) * (qx - px) + (qy - py) * (qy - py));
+			if (dist > minDistance) {
+				nxs.add(qx);
+				nys.add(qy);
+				px = qx;
+				py = qy;
+			}
+		}
+		dist = Math.sqrt((px - xs[0]) * (px - xs[0]) + (py - ys[0])
+				* (py - ys[0]));
+		if (dist <= minDistance) {
+			nxs.set(nxs.size() - 1, xs[0]);
+			nys.set(nys.size() - 1, ys[0]);
+		} else {
+			nxs.add(xs[0]);
+			nys.add(ys[0]);
+		}
+		int[] anxs = new int[nxs.size()];
+		int[] anys = new int[nys.size()];
+		for (int i = 0; i < nxs.size(); i++) {
+			anxs[i] = nxs.get(i);
+			anys[i] = nys.get(i);
+		}
+		return new java.awt.Polygon(anxs, anys, nxs.size());
+	}
 
-    public static java.awt.Polygon sparsifyPolygon(java.awt.Polygon p, double minDistance) {
-	int n = p.npoints;
-	int[] xs = p.xpoints;
-	ArrayList<Integer> nxs = new ArrayList<Integer>(n);
-	int[] ys = p.ypoints;
-	ArrayList<Integer> nys = new ArrayList<Integer>(n);
-	nxs.add(xs[0]);
-	nys.add(ys[0]);
-	int px = xs[0];
-	int py = ys[0];
-	int qx, qy;
-	double dist;
-	for (int i = 1; i < n; i++) {
-	    qx = xs[i];
-	    qy = ys[i];
-	    dist = Math.sqrt((qx-px)*(qx-px) + (qy-py)*(qy-py));
-	    if (dist > minDistance) {
-		nxs.add(qx);
-		nys.add(qy);
-		px = qx;
-		py = qy;
-	    }
+	public static PolygonRoi sparsifyRoi(PolygonRoi r, double minDistance) {
+		return new PolygonRoi(sparsifyPolygon(r.getPolygon(), minDistance),
+				Roi.POLYGON);
 	}
-	dist = Math.sqrt( (px-xs[0])*(px-xs[0]) + (py-ys[0])*(py-ys[0]) );
-	if (dist <= minDistance) {
-	    nxs.set(nxs.size()-1, xs[0]);
-	    nys.set(nys.size()-1, ys[0]);
-	} else {
-	    nxs.add(xs[0]);
-	    nys.add(ys[0]);
-	}
-	int[] anxs = new int[nxs.size()];
-	int[] anys = new int[nys.size()];
-	for (int i = 0; i < nxs.size(); i++) {
-	    anxs[i] = nxs.get(i);
-	    anys[i] = nys.get(i);
-	}
-	return new java.awt.Polygon(anxs, anys, nxs.size());
-    }
-
-    public static PolygonRoi sparsifyRoi(PolygonRoi r, double minDistance) {
-	return new PolygonRoi(sparsifyPolygon(r.getPolygon(), minDistance),
-			      Roi.POLYGON);
-    }
 
 }
 
-
-
 /*
-(head qs) : sparsify (tail qs) where qs = dropWhile (\x -> dist p x < 4)
-*/
+ * (head qs) : sparsify (tail qs) where qs = dropWhile (\x -> dist p x < 4)
+ */
