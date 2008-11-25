@@ -147,12 +147,12 @@ public class State {
 	}
 
 	public void paint(Graphics g, Rectangle visibleWindow, double magnification) {
-		paintFrame(g, visibleWindow, magnification, currentSlice, Color.green, Color.red);
+		paintFrame(g, visibleWindow, magnification, currentSlice, Color.green, Color.red, false);
 		if (showPreviousSlice) {
 			Integer prevFrame = previousNonemptyFrame();
 			if (prevFrame != null) {
 				paintFrame(g, visibleWindow, magnification, previousNonemptyFrame(),
-						Color.blue, Color.gray);
+						Color.blue, Color.gray, true);
 				drawCentroidConnections(g, visibleWindow, magnification, currentSlice, Color.orange);
 			}
 		}
@@ -163,8 +163,14 @@ public class State {
 	
 	public void paintFrame(Graphics g, Rectangle visibleWindow, 
 						double magnification, Integer frame,
-						Color validColor, Color invalidColor) {
-		for (RoiContainer geo : rois.current.get(frame).asListWithoutCurrent()) {
+						Color validColor, Color invalidColor, boolean showCurrent) {
+		List<RoiContainer> k;
+		if (showCurrent) {
+			k = rois.current.get(frame).asList();
+		} else {
+			k = rois.current.get(frame).asListWithoutCurrent();
+		}
+		for (RoiContainer geo : k) {
 			drawGeometry(geo.getGeometry(), g, visibleWindow, magnification, validColor, invalidColor);
 		}
 		
