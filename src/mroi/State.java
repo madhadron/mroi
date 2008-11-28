@@ -70,7 +70,7 @@ public class State {
 
 	public void goToFrameOn(Integer slice, ImagePlus imp) {
 		syncRoiFrom(imp);
-		if (slice == null) {
+		if (slice == null || slice == 0) {
 			this.currentSlice = imp.getCurrentSlice();
 			imp.updateAndRepaintWindow();
 		} else {
@@ -81,6 +81,10 @@ public class State {
 		syncRoiTo(imp);
 	}
 
+	public void goToFrameOn(ImagePlus imp) {
+		goToFrameOn(null,imp);
+	}
+	
 	public void executeCommandOn(String lbl, ImagePlus imp)
 			throws NoSuchCommandException {
 		boolean invoked = false;
