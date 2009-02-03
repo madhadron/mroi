@@ -1,0 +1,6 @@
+Testsuite: mroi.common.test.IntegerContainerTest
+Tests run: 3, Failures: 0, Errors: 0, Time elapsed: 0.01 sec
+
+Testcase: testEquals took 0.004 sec
+Testcase: testWriting took 0.003 sec
+Testcase: testReading took 0.001 sec

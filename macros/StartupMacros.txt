@@ -50,3 +50,7 @@ macro "Toggle ROI IDs [n]" {
 macro "Go to ID... [g]" {
 	call("MroiCommand.run", "gotoid");
 }
+
+macro "Show current ROI's mean..." {
+	call("MroiCommand.run", "showmean");
+}

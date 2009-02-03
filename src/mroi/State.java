@@ -63,6 +63,7 @@ public class State {
 		keyCommands.add(new ToggleVisible());
 		keyCommands.add(new ToggleNumbers());
 		keyCommands.add(new GoToID());
+		keyCommands.add(new ShowMean());
 		this.currentSlice = 1;
 		this.showPreviousSlice = false;
 		this.showRoiIds = false;

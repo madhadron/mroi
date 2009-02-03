@@ -21,11 +21,14 @@ package mroi.geometry;
 
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
+import ij.ImagePlus;
+import ij.process.ImageProcessor;
 import java.util.*;
 import java.lang.reflect.Array;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
 public class GeometryUtilities {
@@ -107,6 +110,26 @@ public class GeometryUtilities {
 	public static PolygonRoi sparsifyRoi(PolygonRoi r, double minDistance) {
 		return new PolygonRoi(sparsifyPolygon(r.getPolygon(), minDistance),
 				Roi.POLYGON);
+	}
+	
+	public static double meanIntensityOfOn(Geometry g, ImagePlus imp) {
+		Envelope env = g.getEnvelopeInternal();
+		if (env == null) return 0;
+		
+		int minX = (int)Math.max(Math.floor(env.getMinX()), 0);
+		int maxX = (int)Math.min(Math.ceil(env.getMaxX()), imp.getWidth());
+		int minY = (int)Math.max(Math.floor(env.getMinY()), 0);
+		int maxY = (int)Math.min(Math.ceil(env.getMaxY()), imp.getHeight());
+		ImageProcessor ip = imp.getProcessor();
+		double res = 0;
+		int N = 0;
+		for (int i = minX; i <= maxX; i++) {
+			for (int j = minY; j <= maxY; j++) {
+				res += ip.get(i,j);
+				N++;
+			}
+		}
+		return res/(double)N;
 	}
 
 }

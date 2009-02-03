@@ -78,7 +78,7 @@ public class MroiCanvas extends ImageCanvas {
 			// If the left is pressed, go through manipualting a 
 			// polygon, and make sure it isn't
 			// dropped when the user clicks outside of it.
-			mc.mousePressedOnAt(imp, x, y, e.getButton(), e.getModifiers());
+			mc.mousePressedOnAt(imp, x, y, e.getButton(), e.getModifiersEx());
 		}
 	}
 	
@@ -107,7 +107,7 @@ public class MroiCanvas extends ImageCanvas {
 			// If the left is pressed, go through manipualting a 
 			// polygon, and make sure it isn't
 			// dropped when the user clicks outside of it.
-			mc.mouseReleasedOnAt(imp, x, y, e.getButton(), e.getModifiers());
+			mc.mouseReleasedOnAt(imp, x, y, e.getButton(), e.getModifiersEx());
 		}
 
 	}

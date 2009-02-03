@@ -24,7 +24,7 @@ public class Singleton{
 	}
 	
 
-	public RoiContainer copyInstance(RoiContainer x)
+		public RoiContainer copyInstance(RoiContainer x)
 	{	
 		clipboard.add(new RoiContainer(RoiContainer.counter++, x.getGeometry()));
 		return clipboard.get(0);

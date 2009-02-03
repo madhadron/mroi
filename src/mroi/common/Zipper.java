@@ -30,6 +30,10 @@ public class Zipper<T extends Readable> {
 		for (LispNode a : ((LispList) ((LispList)ls).val.get(0)).val) {
 			lefts.add((T)(current.read(a)));
 		}
+		
+		for (LispNode a : ((LispList) ((LispList)ls).val.get(0)).val) {
+			lefts.add((T)(current.read(a)));
+		}
 
 	}
 	

@@ -1,4 +1,4 @@
 Testsuite: mroi.commands.SelectTest
-Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 0.02 sec
+Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 0.026 sec
 
-Testcase: testOperation took 0.008 sec
+Testcase: testOperation took 0.014 sec
