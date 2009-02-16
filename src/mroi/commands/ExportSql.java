@@ -30,16 +30,18 @@ import ij.WindowManager;
 import mroi.Zipper;
 import mroi.io.MroiListWriter;
 import ij.IJ;
+import ij.ImagePlus;
 import java.util.*;
 import mroi.RoiContainer;
+import static mroi.geometry.GeometryUtilities.*;
 
 import javax.swing.JFileChooser;
 
 public class ExportSql implements Command<RoiContainer> {
 	final String insertPoint = "INSERT INTO points(id) VALUES(%d);\n";
 	final String insertFrame = "INSERT INTO frames(id,point) VALUES (%d,%d);\n";
-	final String insertPolygon = "INSERT INTO polygons(id,shape,frame,point,predecessor) " +
-		"VALUES(%d,GeomFromText('%s'),%d,%d,%s);\n";
+	final String insertPolygon = "INSERT INTO polygons(id,shape,frame,point,predecessor,meaninten) " +
+		"VALUES(%d,GeomFromText('%s'),%d,%d,%s,%.2f);\n";
 	static final Formatter f = new Formatter();
 	
 	public Zipper<Map<Integer, MZipper<RoiContainer>>> exec(
@@ -54,6 +56,7 @@ public class ExportSql implements Command<RoiContainer> {
 			return z;
 		int point = (int) gd.getNextNumber();
 		if (returnval == JFileChooser.APPROVE_OPTION) {
+			ImagePlus imp = IJ.getImage();
 			try {
 				File f = new File(fc.getSelectedFile().getCanonicalPath());
 				BufferedWriter out = new BufferedWriter(new FileWriter(f));
@@ -68,7 +71,7 @@ public class ExportSql implements Command<RoiContainer> {
 						for (RoiContainer g : zp.asList()) {
 							if (g.getGeometry().isValid()) {
 								out.append(String.format(insertPolygon, g.id, g.getGeometry().toString(),
-										e, point, g.getPredecessorIdAsString()));
+										e, point, g.getPredecessorIdAsString(), meanIntensityOfOn(g.getGeometry(), imp)));
 							}
 						}
 					}

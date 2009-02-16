@@ -125,8 +125,10 @@ public class GeometryUtilities {
 		int N = 0;
 		for (int i = minX; i <= maxX; i++) {
 			for (int j = minY; j <= maxY; j++) {
-				res += ip.get(i,j);
-				N++;
+				if (g.contains(gfact.createPoint(new Coordinate(i,j)))) {
+					res += ip.get(i,j);
+					N++;
+				}
 			}
 		}
 		return res/(double)N;
