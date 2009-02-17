@@ -13,7 +13,7 @@
 <target name="scmcompile">
     <apply taskname="kawa" executable="java" failonerror="true" parallel="true">
         <arg value="-cp" />
-        <arg value="plugins/:lib/ij.jar:lib/jts-1.8.jar:lib/jtsio-1.8.jar" />
+        <arg value="plugins/:lib/kawa-1.9.3.jar:lib/ij.jar:lib/jts-1.8.jar:lib/jtsio-1.8.jar" />
 		<arg value="kawa.repl" />
         <arg value="-d" />
         <arg path="plugins" />
@@ -40,6 +40,7 @@
   <javac srcdir="src" destdir="plugins">
     <classpath>
       <pathelement location="plugins/" />
+      <pathelement location="lib/kawa-1.9.3.jar"/>
       <pathelement location="lib/ij.jar"/>
       <pathelement location="lib/jts-1.8.jar"/>
       <pathelement location="lib/jtsio-1.8.jar"/>
@@ -53,6 +54,7 @@
     <formatter type="plain"/>
     <classpath>
       <pathelement location="plugins/" />
+      <pathelement location="lib/kawa-1.9.3.jar"/>
       <pathelement location="lib/ij.jar"/>
       <pathelement location="lib/jts-1.8.jar"/>
       <pathelement location="lib/jtsio-1.8.jar"/>
@@ -74,6 +76,7 @@
   <java classname="ij.ImageJ" fork="true">
     <classpath>
       <pathelement location="plugins/" />
+      <pathelement location="lib/kawa-1.9.3.jar"/>
       <pathelement location="lib/ij.jar"/>
       <pathelement location="lib/jts-1.8.jar"/>
       <pathelement location="lib/jtsio-1.8.jar"/>
