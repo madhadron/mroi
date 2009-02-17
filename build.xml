@@ -6,7 +6,26 @@
   <echo>Building with tests</echo>
 </target>
 
-<target name="compile">
+<target name="compile" depends="javacompile,scmcompile">
+  <echo>Compiling...</echo>
+</target>
+
+<target name="scmcompile">
+    <apply taskname="kawa" executable="java" failonerror="true" parallel="true">
+        <arg value="-cp" />
+        <arg value="plugins/:lib/ij.jar:lib/jts-1.8.jar:lib/jtsio-1.8.jar" />
+		<arg value="kawa.repl" />
+        <arg value="-d" />
+        <arg path="plugins" />
+        <arg line="--module-static-run --warn-undefined-variable --warn-invoke-unknown-method" />
+        <arg value="-C" />
+        <fileset dir="src">
+            <include name="**/*.scm" />
+        </fileset>
+    </apply>
+</target>
+
+<target name="javacompile">
   <mkdir dir="plugins" />
   <javacc target="grammars/MroiLisp.jj"
 	outputdirectory="src/mroi"

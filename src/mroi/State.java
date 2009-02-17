@@ -33,7 +33,7 @@ import static mroi.geometry.GeometryUtilities.*;
 import mroi.commands.*;
 
 import com.vividsolutions.jts.geom.*;
-
+import kawa.standard.*;
 import java.util.*;
 import java.awt.event.*;
 import java.awt.font.TextLayout;
@@ -46,6 +46,8 @@ public class State {
 	public boolean showRoiIds;
 
 	public State(int numberOfSlices) {
+		Scheme s = new Scheme();
+		Scheme.registerEnvironment();
 		rois = new Zipper<Map<Integer, MZipper<RoiContainer>>>(null,
 				new HashMap<Integer, MZipper<RoiContainer>>(), null);
 		for (int i = 1; i <= numberOfSlices; i++) {
@@ -53,7 +55,7 @@ public class State {
 		}
 		keyCommands.add(new Undo<RoiContainer>());
 		keyCommands.add(new Redo<RoiContainer>());
-		keyCommands.add(new Save());
+//		keyCommands.add(new Save());
 		keyCommands.add(new LegacyLoad());
 		keyCommands.add(new Load());
 		keyCommands.add(new Delete<RoiContainer>());
@@ -64,6 +66,7 @@ public class State {
 		keyCommands.add(new ToggleNumbers());
 		keyCommands.add(new GoToID());
 		keyCommands.add(new ShowMean());
+		keyCommands.add(new ScmSave());
 		this.currentSlice = 1;
 		this.showPreviousSlice = false;
 		this.showRoiIds = false;

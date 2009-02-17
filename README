@@ -19,6 +19,13 @@ If you have Ant installed (it comes with recent JDKs), you can run mroi in place
 
 in the top directory of the distribution.  To install mroi to your own ImageJ installation, put the jars in the `lib/` directory somewhere ImageJ can find them such as your JDK's extensions directory (`/System/Library/Java/Extensions` on MacOS X), and move everything in the `plugins/` directory to your ImageJ plugins directory.  See `DEVELOPMENT` for advice on setting up an environment to extend mroi.
 
+NOTE: If you ever delete the plugins directory in its entirety, you must go to src/mroi/State.java and comment out the line
+
+	keyCommands.add(new ScmSave());
+
+build the whole thing with ant ("ant run" with do just fine), then go back and reinstate the line, and build again.  This is because ScmSave is written in Kawa Scheme, and ant can't properly handle circular dependencies between Java and Scheme.
+
+
 Included Software
 --------------
 mroi includes all the libraries necessary to run it in the lib/ subdirectory.

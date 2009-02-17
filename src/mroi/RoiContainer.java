@@ -3,6 +3,7 @@ package mroi;
 import com.vividsolutions.jts.geom.*;
 import static mroi.geometry.GeometryUtilities.*;
 import ij.gui.Roi;
+import gnu.math.IntNum;
 
 public class RoiContainer {
 	public static int counter = 1;
@@ -16,11 +17,20 @@ public class RoiContainer {
 		this.id = id;
 		this.predecessor = pred;
 	}
+	
 	public RoiContainer(Integer id, Geometry roi) {
 		this(id, roi, null);
 	}
 	public RoiContainer(Geometry roi) {
 		this(counter++, roi, null);
+	}
+	
+	public RoiContainer(gnu.math.IntNum id, Geometry roi) {
+		this(id.intValue(), roi, null);
+	}
+	
+	public RoiContainer(gnu.math.IntNum id, Geometry roi, RoiContainer pred) {
+		this(id.intValue(), roi, pred);
 	}
 	
 	public Geometry getGeometry() { return roi; }

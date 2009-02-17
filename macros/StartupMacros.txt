@@ -11,7 +11,7 @@ macro "Load old Mroi file" {
 }
 
 macro "Save Mrois [s]" {
-      call("MroiCommand.run", "save");
+      call("MroiCommand.run", "scmsave");
 }
 
 macro "Export Mrois as SQL [x]" {

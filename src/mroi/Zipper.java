@@ -40,6 +40,12 @@ public class Zipper<T> {
 		current = c;
 	}
 	
+	public Zipper<T> insertAndStep(T x) {
+		rights.clear();
+		rights.add(x);
+		return right();
+	}
+	
 	public Zipper<T> left() {
 		if (lefts.size() > 0) {
 			LinkedList<T> newRights = new LinkedList<T>(rights);

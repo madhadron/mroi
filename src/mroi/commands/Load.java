@@ -54,10 +54,11 @@ public class Load implements Command<RoiContainer> {
 				MroiLisp parser = new MroiLisp(f);
 				parser.ReInit(f);
 	            newRois = parser.roiFile();
-				z.rights.clear();
-				z.rights.add(newRois);
-				z = z.right();
-				return z;
+//				z.rights.clear();
+//				z.rights.add(newRois);
+//				z = z.right();
+//				return z;
+				return z.insertAndStep(newRois);
 			} catch (IOException e) {
 				IJ.error("Couldn't open from " + fc.getSelectedFile().getName() + ": " + e.getMessage());
 			} catch (mroi.ParseException e) {
