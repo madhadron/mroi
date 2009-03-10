@@ -77,6 +77,8 @@ public class ExportSql implements Command<RoiContainer> {
 					}
 				}
 				out.flush();
+				out.close();
+				IJ.showMessage("Finished exporting SQL.");
 			} catch (IOException e) {
 				IJ.error("Couldn't write SQL to "
 						+ fc.getSelectedFile().getName() + ": "

@@ -1,9 +1,9 @@
 <project default="compile">
 
-<property name="version" value="1.0.1"/>
+<property name="version" value="1.1"/>
 
-<target name="build" depends="compile,test">
-  <echo>Building with tests</echo>
+<target name="build" depends="compile">
+  <echo>Building</echo>
 </target>
 
 <target name="compile" depends="javacompile,scmcompile">
@@ -67,7 +67,7 @@
   </junit>
 </target>
 
-<target name="package" depends="compile,test">
+<target name="package" depends="compile">
   <tar destfile="mroi-${version}.tar.gz" compression="gzip"
        basedir="." includes="src/**,lib/**,plugins/**,README,DESIGN,LICENSE,build.xml"/>
 </target>

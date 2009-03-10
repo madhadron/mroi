@@ -1,0 +1,16 @@
+(load "common-io.scm")
+
+(define (read-from-file file-name)
+  (call-with-input-file file-name
+    (lambda (p) (scheme->roi-set (read p)))))
+
+(define-simple-class <mroi.commands.ScmLoad> (<mroi.commands.RoiContainerCommand>)
+  ((isInvoked lbl) (<String>:equals-ignore-case lbl "scmload"))
+  ((operation mz) #!null)
+  ((exec z frame) (let ((crois (*:.current z))
+			(file-name (get-file-name 'load)))
+		    (if file-name
+			(begin 
+			  (<java.util.List>:clear (<mroi.Zipper>:.rights z))
+			  (<java.util.List>:add (read-from-file file-name))
+			  (<mroi.Zipper>:right))))))

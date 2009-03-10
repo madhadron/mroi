@@ -1,0 +1,66 @@
+(define-namespace Map "class:java.util.Map")
+(define-namespace List "class:java.util.List")
+(define-namespace Set "class:java.util.Set")
+(define-namespace Geom "class:com.vividsolutions.jts.geom.Geometry")
+(define-namespace JFC "class:javax.swing.JFileChooser")
+(define-namespace WM "class:ij.WindowManager")
+(define-namespace RoiC "class:mroi.RoiContainer")
+
+(define (get-file-name type)
+  (let* ((canvas (<ij.gui.ImageWindow>:get-canvas (WM:get-current-window)))
+	 (fc (JFC))
+	 (go? (eq? (JFC:.APPROVE_OPTION) (case type
+					   ('save (JFC:show-save-dialog fc canvas))
+					   ('load (JFC:show-open-dialog fc canvas))
+					   (else  (JFC:.CANCEL_OPTION)))))
+    (if go?
+	(<java.io.File>:get-canonical-path (JFC:get-selected-file fc))
+	#f)))
+
+(define (id x) x)
+
+(define (map->alist (m :: <java.util.Map>) key-f val-f)
+  (letrec ((map-over-iterator (lambda (iter)  
+				(let ((k (<java.util.Iterator>:next iter)))
+				  (cons
+				   (pair (key-f k)
+					 (val-f (Map:get m k)))
+				   (if (<java.util.Iterator>:has-next iter)
+				       (map-over-iterator iter)
+				       '())))))
+	   (iter-on-m (Set:iterator (Map:key-set m))))
+    (if (<java.util.Iterator>:has-next iter-on-m)
+	(map-over-iterator iter-on-m)
+	'())))
+
+(define (jlist->list jl)
+  (letrec ((map-over-iterator (lambda (iter) (cons (<java.util.ListIterator>:next iter) 
+						   (if (<java.util.ListIterator>:has-next iter)
+						       (map-over-iterator iter)
+						       '()))))
+	   (iter-on-m (List:iterator jl)))
+    (if (<java.util.ListIterator>:has-next iter-on-m)
+	(map-over-iterator iter-on-m)
+	'())))
+
+(define (display-roi-container r)
+  (list (RoiC:.id r) (Geom:to-string (RoiC:get-geometry r)) 
+	(if (eq? #!null (RoiC:get-predecessor-id r)) 'null (RoiC:get-predecessor-id r))))
+
+
+(define (has-current? z)
+  (eq? (<java.lang.Object>:.class z) <mroi.JZipper>))
+
+(define (zipper->triple z tail-f current-f null-current-value)
+  (let ((lefts (tail-f (*:.lefts z)))
+	(current (if (has-current? z) (current-f (<mroi.JZipper>:.current z)) null-current-value))
+	(rights (tail-f (*:.rights z))))
+    (list lefts current rights)))
+
+
+(define (roi-set->scheme z) 
+  (let* ((convert-zipper (lambda (p) (zipper->triple p
+						     (lambda (k) (map display-roi-container (jlist->list k)))
+						     display-roi-container
+						     'null))))
+    (map->alist z id convert-zipper)))
