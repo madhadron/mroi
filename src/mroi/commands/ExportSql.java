@@ -34,15 +34,18 @@ import ij.ImagePlus;
 import java.util.*;
 import mroi.RoiContainer;
 import static mroi.geometry.GeometryUtilities.*;
+import ij.WindowManager;
 
 import javax.swing.JFileChooser;
 
 public class ExportSql implements Command<RoiContainer> {
 	final String insertPoint = "INSERT INTO points(id) VALUES(%d);\n";
-	final String insertFrame = "INSERT INTO frames(id,point) VALUES (%d,%d);\n";
+	final String insertFrame = "INSERT INTO frames(id,point,width,height) VALUES (%d,%d,%d,%d);\n";
 	final String insertPolygon = "INSERT INTO polygons(id,shape,frame,point,predecessor,meaninten) " +
 		"VALUES(%d,GeomFromText('%s'),%d,%d,%s,%.2f);\n";
 	static final Formatter f = new Formatter();
+	final int width = WindowManager.getCurrentImage().getWidth();
+	final int height = WindowManager.getCurrentImage().getHeight();
 	
 	public Zipper<Map<Integer, MZipper<RoiContainer>>> exec(
 			final Zipper<Map<Integer, MZipper<RoiContainer>>> z, int frame) {
@@ -67,7 +70,7 @@ public class ExportSql implements Command<RoiContainer> {
 				for (Integer e : rs.keySet()) {
 					MZipper<RoiContainer> zp = rs.get(e);
 					if (zp.size() > 0) {
-						out.append(String.format(insertFrame, e, point));
+					    out.append(String.format(insertFrame, e, point, width, height));
 						for (RoiContainer g : zp.asList()) {
 							if (g.getGeometry().isValid()) {
 								out.append(String.format(insertPolygon, g.id, g.getGeometry().toString(),
