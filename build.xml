@@ -1,6 +1,6 @@
 <project default="compile">
 
-<property name="version" value="1.1"/>
+<property name="version" value="1.2"/>
 
 <target name="build" depends="compile">
   <echo>Building</echo>
@@ -74,6 +74,7 @@
 
 <target name="run" depends="compile">
   <java classname="ij.ImageJ" fork="true">
+    <jvmarg value="-Xmx512m" />
     <classpath>
       <pathelement location="plugins/" />
       <pathelement location="lib/kawa-1.9.3.jar"/>

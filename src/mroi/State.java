@@ -59,7 +59,7 @@ public class State {
 		keyCommands.add(new LegacyLoad());
 		keyCommands.add(new Load());
 		keyCommands.add(new Delete<RoiContainer>());
-		keyCommands.add(new ExportSql());
+		//		keyCommands.add(new ExportSql()); // Obsoleted - developing ScmExport instead.
 		keyCommands.add(new Copy<RoiContainer>());
 		keyCommands.add(new Paste());
 		keyCommands.add(new ToggleVisible());
@@ -67,6 +67,7 @@ public class State {
 		keyCommands.add(new GoToID());
 		keyCommands.add(new ShowMean());
 		keyCommands.add(new ScmSave());
+		//		keyCommands.add(new ScmExport());
 		this.currentSlice = 1;
 		this.showPreviousSlice = false;
 		this.showRoiIds = false;

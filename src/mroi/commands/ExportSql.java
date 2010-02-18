@@ -39,7 +39,7 @@ import ij.WindowManager;
 import javax.swing.JFileChooser;
 
 public class ExportSql implements Command<RoiContainer> {
-	final String insertPoint = "INSERT INTO points(id) VALUES(%d);\n";
+	final String insertPoint = "INSERT INTO points(id,framespacing) VALUES(%d,%d);\n";
 	final String insertFrame = "INSERT INTO frames(id,point,width,height) VALUES (%d,%d,%d,%d);\n";
 	final String insertPolygon = "INSERT INTO polygons(id,shape,frame,point,predecessor,meaninten) " +
 		"VALUES(%d,GeomFromText('%s'),%d,%d,%s,%.2f);\n";
@@ -52,12 +52,14 @@ public class ExportSql implements Command<RoiContainer> {
 		JFileChooser fc = new JFileChooser();
 		int returnval = fc.showSaveDialog(WindowManager.getCurrentWindow()
 				.getCanvas());
-		GenericDialog gd = new GenericDialog("Point number");
+		GenericDialog gd = new GenericDialog("Point information");
 		gd.addNumericField("Point: ", 0, 0);
+		gd.addNumericField("Minutes between frames: ", 10, 10);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return z;
 		int point = (int) gd.getNextNumber();
+		int framespacing = (int) gd.getNextNumber();
 		if (returnval == JFileChooser.APPROVE_OPTION) {
 			ImagePlus imp = IJ.getImage();
 			try {
@@ -66,7 +68,7 @@ public class ExportSql implements Command<RoiContainer> {
 				Map<Integer, MZipper<RoiContainer>> rs = z.current;
 
 				
-				out.append(String.format(insertPoint, point));
+				out.append(String.format(insertPoint, point, framespacing));
 				for (Integer e : rs.keySet()) {
 					MZipper<RoiContainer> zp = rs.get(e);
 					if (zp.size() > 0) {
