@@ -14,9 +14,16 @@ macro "Save Mrois [s]" {
       call("MroiCommand.run", "scmsave");
 }
 
+macro "Export Mroi Tree [x]" {
+	call("MroiCommand.run", "scmexport");
+}
+
+/* Obsoleted.  The code for this plugin is still in the repository,
+but disabled.  Use ScmExport instead.
 macro "Export Mrois as SQL [x]" {
       call("MroiCommand.run", "exportsql");
 }
+*/
 
 macro "Copy Mroi [c]" {
       call("MroiCommand.run", "copy");

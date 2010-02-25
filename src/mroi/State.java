@@ -67,7 +67,7 @@ public class State {
 		keyCommands.add(new GoToID());
 		keyCommands.add(new ShowMean());
 		keyCommands.add(new ScmSave());
-		//		keyCommands.add(new ScmExport());
+		keyCommands.add(new ScmExport());
 		this.currentSlice = 1;
 		this.showPreviousSlice = false;
 		this.showRoiIds = false;
