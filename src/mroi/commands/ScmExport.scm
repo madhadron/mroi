@@ -28,7 +28,17 @@
 
 (define (scheme-to-file file-name sch)
   (call-with-output-file file-name
-    (lambda (p) (format p "~S" sch))))
+    (lambda (p) (format p "~S" (map flatten-tree sch)))))
+
+(define (flatten-tree tr)
+  (list 'tree (flatten-cell (tree-current tr))
+	(map flatten-tree (tree-children tr))))
+
+(define (flatten-cell c)
+  (list 'cell (map flatten-poly (entries c))))
+
+(define (flatten-poly poly)
+  (list 'polygon (polygon-time poly) (polygon-id poly) (polygon-data poly)))
 
 ;; 'save | 'load -> string()
 ;; Opens a Swing file save/load dialog (according to the argument to the function) and blocks until the user makes a selection, when it returns the resulting filename
@@ -77,7 +87,7 @@
 	(if (eq? #!null (RoiC:get-predecessor-id r)) 
 	    'null
 	    (java-int->int (RoiC:get-predecessor-id r)))
-	(list (pair 'polygon (Geom:to-string (RoiC:get-geometry r))))))
+	(list (pair 'wkt-polygon (Geom:to-string (RoiC:get-geometry r))))))
 	
 
 
