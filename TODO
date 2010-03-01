@@ -1,0 +1,4 @@
+* Add support for writing image measurements out as part of export command.
+* Revise README file to reflect the new export command
+* Post to github along with README
+* Write a nice manual with screenshots
