@@ -1,0 +1,1 @@
+java -classpath ij.jar;lib/kawa-1.9.90.jar;lib/jts-1.8.jar;lib/jtsio-1.8.jar;lib/junit-4.4.jar;plugins ij.ImageJ -Dplugins.dir
