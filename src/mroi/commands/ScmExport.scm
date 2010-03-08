@@ -15,9 +15,12 @@
 (define-namespace RoiC "class:mroi.RoiContainer")
 (define-namespace IMP "class:ij.ImagePlus")
 
+(define measurements
+  '(area areaFraction kurtosis max mean median min skewness stdDev xCenterOfMass yCenterOfMass xCentroid yCentroid))
+	 
+
 (define (export z)
   (let* ((crois (<mroi.Zipper>:.current z)) ; crois has type Map<Integer,MZipper<RoiContainer>>
-	 (measurements '(area area-fraction kurtosis max mean median min skewness std-dev x-center-of-mass y-center-of-mass x-centroid y-centroid))
 	 (meas (select-from-atoms measurements)))
     (receive (go? file-name) (get-file-name 'save)
 	     (if (and go? (not (eq? meas 'canceled)))
@@ -25,9 +28,8 @@
 		 z))))
 
 (define (scheme-to-file file-name sch)
-  sch)
-;;  (call-with-output-file file-name
-;;    (lambda (p) (format p "~S" (map flatten-tree sch)))))
+  (call-with-output-file file-name
+    (lambda (p) (format p "~S" (map flatten-tree sch)))))
 
 (define (flatten-tree tr)
   (list 'tree (flatten-cell (tree-current tr))
@@ -55,7 +57,7 @@
 
 (define (select-from-atoms list-of-atoms)
   (let ((str-array (apply <java.lang.String[]> (map symbol->string list-of-atoms)))
-	(bool-array (apply <boolean[]> (map (lambda (x) (<java.lang.Boolean>:boolean-value (<java.lang.Boolean>:.FALSE))) list-of-atoms)))
+	(bool-array (make <boolean[]> length: (length list-of-atoms)))
 	(dialog (<ij.gui.GenericDialog> "Choose measurements to export")))
     (dialog:add-checkbox-group (length list-of-atoms) 1 str-array bool-array)
     (dialog:show-dialog)
@@ -334,12 +336,12 @@
 ;;     (10 5 ((wkt-polygon . "POLYGON ((17 21, 237 21, 237 154, 17 154, 17 21, 17 21))")))))
 
 
-(define imp (<ij.IJ>:getImage))
-(define st (<mroi.State>:.rois (<mroi.MroiCanvas>:.state (imp:get-canvas))))
-(define crois (<mroi.Zipper>:.current st))
-(define prp (java-mrois->scheme '(area min) crois))
+;; (define imp (<ij.IJ>:getImage))
+;; (define st (<mroi.State>:.rois (<mroi.MroiCanvas>:.state (imp:get-canvas))))
+;; (define crois (<mroi.Zipper>:.current st))
+;; (define prp (java-mrois->scheme '(area min) crois))
 
 (define-simple-class <mroi.commands.ScmExport> (<mroi.commands.RoiContainerCommand>)
 	((isInvoked lbl) :: <boolean> (<java.lang.String>:equals-ignore-case lbl "scmexport"))
 	((operation mz) :: <mroi.MZipper> mz)
- 	((exec z frame) :: <mroi.Zipper> (export z)))
+ 	((exec z frame) :: <mroi.Zipper> (export z) z))
