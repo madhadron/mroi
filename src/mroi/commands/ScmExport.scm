@@ -13,22 +13,21 @@
 (define-namespace JFC "class:javax.swing.JFileChooser")
 (define-namespace WM "class:ij.WindowManager")
 (define-namespace RoiC "class:mroi.RoiContainer")
-
-(define-simple-class <mroi.commands.ScmExport> (<mroi.commands.RoiContainerCommand>)
-	((isInvoked lbl) (<String>:equals-ignore-case lbl "scmexport"))
-	((operation mz) mz)
- 	((exec z frame) (export z) z))
+(define-namespace IMP "class:ij.ImagePlus")
 
 (define (export z)
-  (let ((crois (<mroi.Zipper>:.current z))) ; crois has type Map<Integer,MZipper<RoiContainer>>
+  (let* ((crois (<mroi.Zipper>:.current z)) ; crois has type Map<Integer,MZipper<RoiContainer>>
+	 (measurements '(area area-fraction kurtosis max mean median min skewness std-dev x-center-of-mass y-center-of-mass x-centroid y-centroid))
+	 (meas (select-from-atoms measurements)))
     (receive (go? file-name) (get-file-name 'save)
-	     (if go?
-		 (scheme-to-file file-name (merge-frames (java-mrois->scheme crois)))
+	     (if (and go? (not (eq? meas 'canceled)))
+		 (scheme-to-file file-name (merge-frames (java-mrois->scheme meas crois)))
 		 z))))
 
 (define (scheme-to-file file-name sch)
-  (call-with-output-file file-name
-    (lambda (p) (format p "~S" (map flatten-tree sch)))))
+  sch)
+;;  (call-with-output-file file-name
+;;    (lambda (p) (format p "~S" (map flatten-tree sch)))))
 
 (define (flatten-tree tr)
   (list 'tree (flatten-cell (tree-current tr))
@@ -53,19 +52,40 @@
 	(values #t (<java.io.File>:get-canonical-path (JFC:get-selected-file fc)))
 	(values #f ""))))
 
+
+(define (select-from-atoms list-of-atoms)
+  (let ((str-array (apply <java.lang.String[]> (map symbol->string list-of-atoms)))
+	(bool-array (apply <boolean[]> (map (lambda (x) (<java.lang.Boolean>:boolean-value (<java.lang.Boolean>:.FALSE))) list-of-atoms)))
+	(dialog (<ij.gui.GenericDialog> "Choose measurements to export")))
+    (dialog:add-checkbox-group (length list-of-atoms) 1 str-array bool-array)
+    (dialog:show-dialog)
+    (if (dialog:was-canceled)
+	'canceled
+        (reverse (fold-right (lambda (next-atom selected-atoms)
+			       (if (dialog:get-next-boolean)
+				   (cons next-atom selected-atoms)
+				   selected-atoms)) '() (reverse list-of-atoms))))))
+
 ;; Converting Java structure to Scheme:
 
 (define (java-int->int x)
   (<gnu.math.IntNum> (<java.lang.Integer>:intValue x)))
 
-(define (java-mrois->scheme rois)
-  (bimap java-int->int (compose (curry-map roi-container->list) zipper->list) (map->alist rois)))
+(define (snd f)
+  (lambda (x y)
+    (list x (f y))))
+
+(define (java-mrois->scheme meas rois)
+  (bimap java-int->int 
+	 (lambda (fr zp) ((compose (curry-map (roi-container->list meas fr)) zipper->list) zp))
+	 (map->alist rois)))
 
 ;; key -> x, value -> y, association-list -> association-list
 ;; Maps f over the keys and g over the values of the association list
 (define (bimap f g al)
   (fold-right (lambda (entry ys)
-		(let ((new-entry (cons (f (car entry)) (g (cdr entry)))))
+		(let* ((new-car (f (car entry)))
+		       (new-entry (cons new-car (g new-car (cdr entry)))))
 		  (cons new-entry ys))) '() al))
 
 ;; Map<X,Y> -> association-list
@@ -82,12 +102,30 @@
 	(map-over-iterator iter-on-m)
 	'())))
 
-(define (roi-container->list r)
-  (list (java-int->int (RoiC:.id r))
-	(if (eq? #!null (RoiC:get-predecessor-id r)) 
-	    'null
-	    (java-int->int (RoiC:get-predecessor-id r)))
-	(list (pair 'wkt-polygon (Geom:to-string (RoiC:get-geometry r))))))
+(define (get-measurements-on-image-plus meas imp)
+  (let ((stats (IMP:getStatistics imp)))
+    (fold-right (lambda (next-atom accumulated-list)
+		  (cons (pair next-atom (as <double> (field stats next-atom))) accumulated-list)) '() meas)))
+
+(define (get-measurements-on-roi meas imp frame roi)
+  (let ((current-frame (IMP:get-slice imp))
+	(current-roi (IMP:get-roi imp)))
+    (IMP:set-slice imp frame)
+    (invoke (as IMP imp) 'setRoi (as <ij.gui.Roi> roi))
+    (let ((p (get-measurements-on-image-plus meas imp)))
+      (IMP:set-slice imp current-frame)
+      (invoke (as IMP imp) 'setRoi (as <ij.gui.Roi> current-roi))
+      p)))
+
+
+(define (roi-container->list meas fr)
+  (lambda (r)
+    (list (java-int->int (RoiC:.id r))
+	  (if (eq? #!null (RoiC:get-predecessor-id r)) 
+	      'null
+	      (java-int->int (RoiC:get-predecessor-id r)))
+	  (cons (pair 'wkt-polygon (Geom:to-string (RoiC:get-geometry r)))
+	  	(get-measurements-on-roi meas (<ij.IJ>:get-image) fr (<mroi.geometry.GeometryUtilities>:geom-to-roi (RoiC:get-geometry r)))))))
 	
 
 
@@ -130,31 +168,23 @@
 (define (leaf x) (tree x '()))
 
 
-
+(define (key-< x y)
+  (< (car x) (car y)))
 
 ;; alist -> list
 ;; Returns a list of all the values, still in order, in an association list.
 (define (alist-values al)
   (fold-right (lambda (next so-far) (cons (cdr next) so-far)) '() al))
 
-(define (key-< x y)
-  (< (car x) (car y)))
-
-(define (sort-frames frames)
-  (bimap id (lambda (x) (sort x key-<)) (sort frames key-<)))
-
 ;; Map<Integer,MZipper<RoiContainer>> -> [tree]
 (define (merge-frames frames)
-  (let* ((key-< (lambda (x y) (< (car x) (car y))))
-	 (sorted-frames (bimap id (lambda (x) (sort x key-<)) (sort frames key-<))))
+  (let* ((sorted-frames (bimap id (lambda (i x) (sort x key-<)) (sort frames key-<))))
     (map cdr (fold-right merge-frames1 '() sorted-frames))))
 
-; time, (id pred data) -> (pred . polygon)
+; time, (id pred data) -> (polygon . pred)
 (define (reshape tm rec)
   (pair (polygon tm (first rec) (third rec)) (second rec)))
-
-(define (reshape-frame q)
-  (map (lambda (x) (reshape (car q) x)) (cdr q)))
+;  (pair (polygon tm (first rec) (third rec)) (second rec)))
 
 ;; (frame . list of regions), ((pred . tree)) -> ((pred . tree))
 (define (merge-frames1 roi-list trees)
@@ -304,3 +334,12 @@
 ;;     (10 5 ((wkt-polygon . "POLYGON ((17 21, 237 21, 237 154, 17 154, 17 21, 17 21))")))))
 
 
+(define imp (<ij.IJ>:getImage))
+(define st (<mroi.State>:.rois (<mroi.MroiCanvas>:.state (imp:get-canvas))))
+(define crois (<mroi.Zipper>:.current st))
+(define prp (java-mrois->scheme '(area min) crois))
+
+(define-simple-class <mroi.commands.ScmExport> (<mroi.commands.RoiContainerCommand>)
+	((isInvoked lbl) :: <boolean> (<java.lang.String>:equals-ignore-case lbl "scmexport"))
+	((operation mz) :: <mroi.MZipper> mz)
+ 	((exec z frame) :: <mroi.Zipper> (export z)))
