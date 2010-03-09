@@ -1,37 +1,28 @@
 MROI - MULTIPLE ROIS FOR IMAGEJ
 Fred Ross <madhadron@gmail.com>
 
-mroi extends ImageJ's region of interest system to multiple regions maintained independently across multiple frames of an image stack.  It maintains undo/redo information for all region operations, lets you save and load region collections, and provides hooks for region-modifying tools.
+mroi extends ImageJ's region of interest system to multiple regions maintained independently across multiple frames of an image stack.  It maintains undo/redo information for all region operations, lets you save and load region collections, connect regions to their predecessors in previous frames, export region sets as trees based on those connections and including measurements on the regions, and provides hooks for writing new region-modifying tools that integrate with all the other functionality of the plugin.
 
-The latest functional version is always the master branch of Fred Ross (madhadron)'s mainline repository at [Gitorious][gitorious-repo].  Releases are now and again posted to [Fred Ross's web space at EPFL][fred-epfl], though they may not always be the latest code in the git repository.
+I have provided a manual and quick reference sheet in the `doc/` subdirectory.  You will want to read through the manual to learn what mroi can do.
 
-[gitorious-repo]: http://gitorious.org/projects/mroi
-[fred-epfl]: https://documents.epfl.ch/users/r/ro/ross/www/software/
+The latest functional version is always the master branch of Fred Ross (madhadron)'s repository at [`github`][github-repo].  You can download releases from the 'Downloads' section of the same page.
 
+[github-repo]: http://github.com/madhadron/mroi
 
 Installation
 ---------
-If you have Ant installed (it comes with recent JDKs), you can run mroi in place by typing
+If you downloaded a compressed release, uncompress it.  The resulting directory is the ready to use installation.  You can put it anywhere you like.  If you downloaded the latest version from the github repository, the resulting directory is also always ready to run.
 
-`$ ant run`
-
-in the top directory of the distribution.  To install mroi to your own ImageJ installation, put the jars in the `lib/` directory somewhere ImageJ can find them such as your JDK's extensions directory (`/System/Library/Java/Extensions` on MacOS X), and move everything in the `plugins/` directory to your ImageJ plugins directory.  See `DEVELOPMENT` for advice on setting up an environment to extend mroi.
-
-NOTE: If you ever delete the plugins directory in its entirety, you must go to src/mroi/State.java and comment out the line
-
-	keyCommands.add(new ScmSave());
-
-build the whole thing with ant ("ant run" with do just fine), then go back and reinstate the line, and build again.  This is because ScmSave is written in Kawa Scheme, and ant can't properly handle circular dependencies between Java and Scheme.
-
+On Windows, double click on `ImageJ.bat`.  On MacOS X, double click on `ImageJ.app`.  On Linux, run the script `run` in the mroi directory.  This should be all you need to do.
 
 Included Software
 --------------
-mroi includes all the libraries necessary to run it in the lib/ subdirectory.
+mroi includes all the libraries necessary to run it in the `lib/` subdirectory.
 
 * ij.jar ([ImageJ][ij], public domain)
 * jts-1.8.jar and jtsio-1.8.jar ([Java Topology Suite][jts], LGPL)
 * junit-4.4.jar ([JUnit][junit], CPL)
-* kawa-1.9.3.jar ([Kawa][kawa], [X11/MIT License][x11-license])
+* kawa-1.9.90.jar ([Kawa][kawa], [X11/MIT License][x11-license])
 
 [ij]: http://rsb.info.nih.gov/ij/
 [jts]: http://www.vividsolutions.com/jts/jtshome.htm
@@ -39,25 +30,10 @@ mroi includes all the libraries necessary to run it in the lib/ subdirectory.
 [kawa]: http://www.gnu.org/software/kawa/index.html
 [x11-license]: http://www.gnu.org/software/kawa/Software-License.html
 
-Usage
------
-Load an image stack in ImageJ.  Run the mroi plugin.  The left mouse button's behavior doesn't change.  It draws and moves ROIs, but clicking outside the ROI no longer makes it disappear.
-
-The middle and right mouse buttons select ROIs.  Click either in an ROI, and it becomes selected (turns yellow), and all other ROIs are unselected (turn red or green).  Click in space not occupied by an ROI to have no ROI selected.  Only one ROI can be selected at a time.  Valid unselected ROIs (ROIs which will be properly exported to SQL) are green when unselected; invalid ones are red.  The most common cause of being invalid is self intersection.
-
-z and r undo and redo mutating actions on ROIs, respectively.  Mutating actions change the ROIs.  Selecting an ROI is nonmutating.  Changing frames is nonmutating.  Adding an ROI is mutating.
-
-d deletes any currently selected ROI.  o loads files containing ROIs.  s saves the current ROI set to a file.  x exports the current ROI set to an SQL file suitable for loading into lineagedb ([lineagedb]).  Exporting can be slow since it calculates the mean intensities of all the ROIs, unfortunately using some rather expensive library calls.  A message will pop up to tell you when it is through.
-
-Each ROI as a unique label.  Toggle display of these numeric labels by hitting 'n'.  You can search for a specific label by hitting 'g' and entering the label in the box that pops up.  mroi goes to the correct frame and selects that ROI if the label exists.
-
-mroi keeps links from ROIs to predecessor ROIs in the previous nonempty frame.  It guesses them when you add a new ROI, and you can edit these connections as well.  Hit 't' to toggle showing connections and the ROIs in the previous nonempty frame (shown in blue).  To edit a connection, right click-and-drag from an ROI in the current frame to a blue ROI from the previous frame.  To completely disconnect an ROI from the previous frame, click-and-drag from the ROI into an area not occupied by any blue ROI.  mroi shows a yellow line between the centroids of each connected pair.
-
-[lineagedb]: http://gitorious.org/projects/lineagedb/
-
-Known Bugs
----------
-* Exporting to SQL can be very slow, as I call the JTS 'contains' predicate for every point in the bounding rectangle of each mroi when calculating its mean intensity.
+Known bugs
+----------
+None
 
 Todo
 ----
+* Extend mroi to handle point and line ROIs.  At the moment it only supports polygons.

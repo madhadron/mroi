@@ -40,7 +40,7 @@
   <javac srcdir="src" destdir="plugins">
     <classpath>
       <pathelement location="plugins/" />
-      <pathelement location="lib/kawa-1.9.3.jar"/>
+      <pathelement location="lib/kawa-1.9.90.jar"/>
       <pathelement location="ij.jar"/>
       <pathelement location="lib/jts-1.8.jar"/>
       <pathelement location="lib/jtsio-1.8.jar"/>
@@ -54,7 +54,7 @@
     <formatter type="plain"/>
     <classpath>
       <pathelement location="plugins/" />
-      <pathelement location="lib/kawa-1.9.3.jar"/>
+      <pathelement location="lib/kawa-1.9.90.jar"/>
       <pathelement location="ij.jar"/>
       <pathelement location="lib/jts-1.8.jar"/>
       <pathelement location="lib/jtsio-1.8.jar"/>

@@ -3,7 +3,7 @@ package mroi;
 import com.vividsolutions.jts.geom.*;
 import static mroi.geometry.GeometryUtilities.*;
 import ij.gui.Roi;
-import gnu.math.IntNum;
+import gnu.math.*;
 
 public class RoiContainer {
 	public static int counter = 1;
